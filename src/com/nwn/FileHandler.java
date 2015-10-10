@@ -100,12 +100,19 @@ public class FileHandler {
             BufferedInputStream bis = new BufferedInputStream(url.openStream());
             FileOutputStream fis = new FileOutputStream(dest);
             String fileSizeString = url.openConnection().getHeaderField("Content-Length");
-            int fileSize = Integer.parseInt(fileSizeString);
+            double fileSize = Double.parseDouble(fileSizeString);
             byte[] buffer = new byte[1024];
             int count;
+            double bytesDownloaded = 0.0;
             while((count = bis.read(buffer,0,1024)) != -1)
             {
+                bytesDownloaded += count;
                 fis.write(buffer, 0, count);
+
+                int downloadStatus = (int)((bytesDownloaded/fileSize)*100);
+
+                //todo: remove once ui is implemented
+                System.out.println("Downloading " + fileUrl + " " + downloadStatus + "%");
             }
             fis.close();
             bis.close();
