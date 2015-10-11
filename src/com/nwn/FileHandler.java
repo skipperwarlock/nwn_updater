@@ -130,12 +130,11 @@ public class FileHandler {
 
     /**
      * Get file extension as string
-     * @param file desired file
+     * @param fileName String name of file
      * @return extension as string without '.'
      */
-    public static String getFileExtension(Path file){
+    public static String getFileExtension(String fileName){
         String extension = "";
-        String fileName = file.getFileName().toString();
         int i = fileName.lastIndexOf('.');
         int p = Math.max(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\'));
 
@@ -144,5 +143,31 @@ public class FileHandler {
         }
 
         return extension;
+    }
+
+    /**
+     * Get suggested folder for file based off extension
+     * @param fileName String name of respective file
+     * @return String of folder name file should be placed in
+     */
+    public static String getFolderByExtension(String fileName){
+        String ext = getFileExtension(fileName);
+        String folder = ext;
+        switch (ext){
+            case "bmu":
+                folder = "music";
+                break;
+            case "wav":
+                folder = "ambient";
+                break;
+            case "hak":
+                folder = "hak";
+                break;
+            case "tlk":
+                folder = "tlk";
+                break;
+        }
+
+        return folder;
     }
 }
