@@ -127,4 +127,22 @@ public class FileHandler {
 
         return true;
     }
+
+    /**
+     * Get file extension as string
+     * @param file desired file
+     * @return extension as string without '.'
+     */
+    public static String getFileExtension(Path file){
+        String extension = "";
+        String fileName = file.getFileName().toString();
+        int i = fileName.lastIndexOf('.');
+        int p = Math.max(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\'));
+
+        if (i > p) {
+            extension = fileName.substring(i+1);
+        }
+
+        return extension;
+    }
 }
