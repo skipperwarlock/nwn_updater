@@ -3,7 +3,6 @@ package com.nwn;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-//.hak, .tlk .bmu, .wav
 public class Main {
 
     public static void testing(){

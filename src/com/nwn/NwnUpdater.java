@@ -7,8 +7,9 @@ import java.util.ArrayList;
  * Created by Sam on 10/10/2015.
  */
 public class NwnUpdater implements Runnable{
+    private Path                  serverFile;
     private ArrayList<ServerFile> serverFileList;
-    private Path nwnRootPath;
+    private Path                  nwnRootPath;
 
     public NwnUpdater() {
     }
@@ -23,6 +24,14 @@ public class NwnUpdater implements Runnable{
         //delete any tmp data
     }
 
+    private void parseServerFile(){
+        //Server file will be a json file
+        //We need to parse the details of each file
+        //and store them in our serverFileList
+        //This might seem a bit redundant, but I think
+        //it will pay off when we do validations
+    }
+
     public ArrayList<ServerFile> getServerFileList(){
         return serverFileList;
     }
@@ -31,11 +40,19 @@ public class NwnUpdater implements Runnable{
         return nwnRootPath;
     }
 
-    public void setServerFileList(ArrayList<ServerFile> newServerFileList){
-        serverFileList = newServerFileList;
+    public Path getServerFile(){
+        return serverFile;
     }
+
+//    public void setServerFileList(ArrayList<ServerFile> newServerFileList){
+//        serverFileList = newServerFileList;
+//    }
 
     public void setNwnRootPath(Path newNwnRootPath){
         nwnRootPath = newNwnRootPath;
+    }
+
+    public void setServerFile(Path newServerFile){
+        serverFile = newServerFile;
     }
 }
