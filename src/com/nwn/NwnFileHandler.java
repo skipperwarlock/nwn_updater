@@ -176,6 +176,7 @@ public class NwnFileHandler {
     public static String getFolderByExtension(String fileName){
         String ext = getFileExtension(fileName);
         String folder = ext;
+        //TODO: enums
         switch (ext){
             case "bmu":
                 folder = "music";
@@ -188,6 +189,9 @@ public class NwnFileHandler {
                 break;
             case "tlk":
                 folder = "tlk";
+                break;
+            case "zip":
+                folder = "compressed_tmp";
                 break;
         }
 

@@ -14,7 +14,7 @@ public class ServerFile {
     public ServerFile(String fileName, URL fileUrl){
         name = fileName;
         url = fileUrl;
-        folder = NwnFileHandler.getFolderByExtension(fileName);
+        folder = NwnFileHandler.getFolderByExtension(fileName).toLowerCase();
     }
 
     public ServerFile(String fileName, URL fileUrl, String fileFolder){
