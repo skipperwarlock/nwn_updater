@@ -6,11 +6,13 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import javax.swing.text.html.HTMLDocument;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Set;
@@ -21,18 +23,19 @@ import java.util.Set;
 public class NwnUpdater implements Runnable{
     private Path                  serverFileJson;
     private ArrayList<ServerFile> serverFileList;
+    private ArrayList<String>     affectedFolders;
     private Path                  nwnRootPath;
 
     public NwnUpdater() {
         serverFileList = new ArrayList<ServerFile>();
+        affectedFolders = new ArrayList<String>();
     }
 
     @Override
     public void run() {
         parseServerFileJson();
-        System.out.println(serverFileList.toString());
-//        ArrayList<URL> filesToDownload = determineFilesToDownload();
-
+        ArrayList<ServerFile> filesToDownload = determineFilesToDownload();
+        downloadFilesFromList(filesToDownload);
         //by this point, serverFileList should already be populated
         //we need to:
         //parse the necessary directories to determine if all files are present
@@ -41,8 +44,26 @@ public class NwnUpdater implements Runnable{
         //delete any tmp data
     }
 
-    private ArrayList<URL> determineFilesToDownload(){
-        return null;
+    private void downloadFilesFromList(ArrayList<ServerFile> filesToDownload){
+        for(ServerFile serverFile:filesToDownload){
+            FileHandler.downloadFile(serverFile.getUrl().toString(), nwnRootPath + File.separator + serverFile.getFolder()
+                    + File.separator + serverFile.getName());
+        }
+    }
+
+    private ArrayList<ServerFile> determineFilesToDownload(){
+        ArrayList<ServerFile> filesToDownload = new ArrayList<ServerFile>();
+        for(String folder:affectedFolders){
+            Path folderPath = Paths.get(nwnRootPath.toString() + File.separator + folder);
+            ArrayList<String> localFiles = FileHandler.getFilesNamesInDirectory(folderPath);
+            for(ServerFile serverFile:serverFileList){
+                if(serverFile.getFolder().equals(folder) && !localFiles.contains(serverFile.getName())){
+                    filesToDownload.add(serverFile);
+                }
+            }
+        }
+
+        return filesToDownload;
     }
 
     private void parseServerFileJson(){
@@ -53,6 +74,7 @@ public class NwnUpdater implements Runnable{
             Set<String> folders = jsonObject.keySet();
 
             for(String folderName:folders){
+                affectedFolders.add(folderName);
                 JSONArray filesByFolder = (JSONArray)jsonObject.get(folderName);
                 Iterator fileItr = filesByFolder.iterator();
                 while (fileItr.hasNext()){

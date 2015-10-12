@@ -132,7 +132,7 @@ public class FileHandler {
                 int downloadStatus = (int)((bytesDownloaded/fileSize)*100);
 
                 //todo: remove once ui is implemented
-                System.out.println("Downloading " + fileUrl + " " + downloadStatus + "%");
+                System.out.println("Downloading " + fileUrl + " to " + dest + " " + downloadStatus + "%");
             }
             fis.close();
             bis.close();

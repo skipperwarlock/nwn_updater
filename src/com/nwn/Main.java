@@ -14,7 +14,7 @@ public class Main {
     public static void updaterThreadExample(){
         Path serverFileJson = Paths.get("test.json");
         NwnUpdater nwnUpdater = new NwnUpdater();
-        nwnUpdater.setNwnRootPath(null);
+        nwnUpdater.setNwnRootPath(Paths.get("C:\\NeverwinterNights\\NWN"));
         nwnUpdater.setServerFileJson(serverFileJson);
 
         Thread updateThread = new Thread(nwnUpdater, "Update Thread");
