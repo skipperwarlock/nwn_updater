@@ -5,11 +5,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import javax.swing.text.html.HTMLDocument;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,7 +44,7 @@ public class NwnUpdater implements Runnable{
 
     private void downloadFilesFromList(ArrayList<ServerFile> filesToDownload){
         for(ServerFile serverFile:filesToDownload){
-            FileHandler.downloadFile(serverFile.getUrl().toString(), nwnRootPath + File.separator + serverFile.getFolder()
+            NwnFileHandler.downloadFile(serverFile.getUrl().toString(), nwnRootPath + File.separator + serverFile.getFolder()
                     + File.separator + serverFile.getName());
         }
     }
@@ -55,7 +53,7 @@ public class NwnUpdater implements Runnable{
         ArrayList<ServerFile> filesToDownload = new ArrayList<ServerFile>();
         for(String folder:affectedFolders){
             Path folderPath = Paths.get(nwnRootPath.toString() + File.separator + folder);
-            ArrayList<String> localFiles = FileHandler.getFilesNamesInDirectory(folderPath);
+            ArrayList<String> localFiles = NwnFileHandler.getFilesNamesInDirectory(folderPath);
             for(ServerFile serverFile:serverFileList){
                 if(serverFile.getFolder().equals(folder) && !localFiles.contains(serverFile.getName())){
                     filesToDownload.add(serverFile);

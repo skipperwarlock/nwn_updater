@@ -13,7 +13,7 @@ import net.lingala.zip4j.core.ZipFile;
 ` * Created by Sam on 10/10/2015.
   * TODO: add test cases, add logging
  */
-public class FileHandler {
+public class NwnFileHandler {
 
     /**
      * Get files in given directory
