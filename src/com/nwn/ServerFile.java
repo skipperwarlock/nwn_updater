@@ -30,6 +30,10 @@ public class ServerFile {
         md5 = fileMd5;
     }
 
+    public String toString(){
+        return "Name: " + getName() + "\nFolder: " + getFolder() + "\nMd5: " + getMd5() + "\nUrl: " + getUrl();
+    }
+
     public String getMd5(){
         return md5;
     }

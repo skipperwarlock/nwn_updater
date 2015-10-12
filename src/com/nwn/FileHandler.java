@@ -28,9 +28,27 @@ public class FileHandler {
                 filesInDir.add(file);
             }
         }catch (IOException ex){
-
+            ex.printStackTrace();
         }
         return filesInDir;
+    }
+
+    /**
+     * Get names of files in given directory
+     * @param dir Path to directory for parsing
+     * @return String of file names in directory
+     */
+    public static ArrayList<String> getFilesNamesInDirectory(Path dir){
+        ArrayList<String> fileNamesInDir = new ArrayList<String>();
+        try {
+            DirectoryStream<Path> dirStream = Files.newDirectoryStream(dir);
+            for (Path file : dirStream) {
+                fileNamesInDir.add(file.getFileName().toString());
+            }
+        }catch (IOException ex){
+            ex.printStackTrace();
+        }
+        return fileNamesInDir;
     }
 
     /**
@@ -46,7 +64,7 @@ public class FileHandler {
 
             return md5;
         }catch (IOException ex){
-
+            ex.printStackTrace();
         }
         return "";
     }
@@ -61,6 +79,7 @@ public class FileHandler {
         try {
             Files.move(src, dest);
         }catch (IOException ex) {
+            ex.printStackTrace();
             return false;
         }
 
@@ -83,6 +102,7 @@ public class FileHandler {
                 zipFile.extractAll(dest.toString());
             }
         }catch (ZipException ex){
+            ex.printStackTrace();
             return false;
         }
         return true;
@@ -117,11 +137,14 @@ public class FileHandler {
             fis.close();
             bis.close();
 
-        }catch (MalformedURLException mue){
+        }catch (MalformedURLException ex){
+            ex.printStackTrace();
             return false;
-        }catch (FileNotFoundException fnfe){
+        }catch (FileNotFoundException ex){
+            ex.printStackTrace();
             return false;
-        }catch (IOException ioex){
+        }catch (IOException ex){
+            ex.printStackTrace();
             return false;
         }
 
