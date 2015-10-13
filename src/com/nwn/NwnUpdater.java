@@ -50,10 +50,31 @@ public class NwnUpdater implements Runnable{
         System.out.println("Update Process Complete");
     }
 
+    private void uncompressFile(ServerFile compressedFile){
+        System.out.print("Extracting " + compressedFile.getName() + "...");
+        String fileLoc = nwnRootPath + File.separator + compressedFile.getFolder() + File.separator + compressedFile.getName();
+        String baseName = fileLoc;
+        int pos = fileLoc.lastIndexOf('.');
+        if(pos > 0){
+            baseName = fileLoc.substring(0,pos);
+        }
+        File extractFolder = new File(baseName);
+        if(!extractFolder.exists()){
+            extractFolder.mkdir();
+        }
+        NwnFileHandler.extractFile(Paths.get(fileLoc),Paths.get(baseName));
+        System.out.print("done\n");
+    }
+
     private void downloadFilesFromList(ArrayList<ServerFile> filesToDownload){
+        //TODO: confirm files downloaded
         for(ServerFile serverFile:filesToDownload){
             NwnFileHandler.downloadFile(serverFile.getUrl().toString(), nwnRootPath + File.separator + serverFile.getFolder()
                     + File.separator + serverFile.getName());
+            //TODO: replace string with enum
+            if(serverFile.getFolder().equals("compressed_tmp")){
+                uncompressFile(serverFile);
+            }
         }
     }
 
