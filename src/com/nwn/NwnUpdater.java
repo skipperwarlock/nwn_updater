@@ -19,10 +19,10 @@ import java.util.Set;
  * Created by Sam on 10/10/2015.
  */
 public class NwnUpdater implements Runnable{
+    private Path                  nwnRootPath;
     private Path                  serverFileJson;
     private ArrayList<ServerFile> serverFileList;
     private ArrayList<String>     affectedFolders;
-    private Path                  nwnRootPath;
 
     public NwnUpdater(Path newNwnRootPath, Path newServerFileJson) {
         serverFileList = new ArrayList<ServerFile>();
@@ -41,29 +41,48 @@ public class NwnUpdater implements Runnable{
         parseServerFileJson();
         ArrayList<ServerFile> filesToDownload = determineFilesToDownload();
         downloadFilesFromList(filesToDownload);
-        //by this point, serverFileList should already be populated
-        //we need to:
-        //parse the necessary directories to determine if all files are present
-        //download files not present
-        //move files to correct directories
-        //delete any tmp data
+        //todo:delete any tmp data
         System.out.println("Update Process Complete");
     }
 
-    private void uncompressFile(ServerFile compressedFile){
-        System.out.print("Extracting " + compressedFile.getName() + "...");
-        String fileLoc = nwnRootPath + File.separator + compressedFile.getFolder() + File.separator + compressedFile.getName();
+    private void processFilesInDirectory(Path uncompressedFolder){
+        ArrayList<String> fileNames = NwnFileHandler.getFilesNamesInDirectory(uncompressedFolder);
+        for(String fileName:fileNames){
+            Path srcFile = Paths.get(uncompressedFolder.toString() + File.separator + fileName);
+            if(srcFile.toFile().isDirectory()){
+                processFilesInDirectory(srcFile);
+            }else {
+                String folderName = NwnFileHandler.getFolderByExtension(fileName);
+                Path desiredPath = Paths.get(nwnRootPath.toString() + File.separator + folderName + File.separator + fileName);
+                if (!desiredPath.toFile().exists()) {
+                    NwnFileHandler.moveFile(srcFile, desiredPath);
+                    if (folderName.equals("compressed_tmp")) {
+                        uncompressFile(fileName, folderName);
+                    }
+                }
+            }
+        }
+    }
+
+    private void uncompressFile(String fileName, String parentFolder){
+        System.out.print("Extracting " + fileName + "...");
+        String fileLoc = nwnRootPath + File.separator + parentFolder + File.separator + fileName;
         String baseName = fileLoc;
-        int pos = fileLoc.lastIndexOf('.');
-        if(pos > 0){
-            baseName = fileLoc.substring(0,pos);
+        String fileExt = NwnFileHandler.getFileExtension(fileLoc);
+        if(fileExt.length() > 0){
+            baseName = fileLoc.substring(0,fileLoc.lastIndexOf('.'));
         }
-        File extractFolder = new File(baseName);
-        if(!extractFolder.exists()){
-            extractFolder.mkdir();
+        if(fileExt.equals("zip")) {
+            File extractFolder = new File(baseName);
+            if (!extractFolder.exists()) {
+                extractFolder.mkdir();
+            }
+            NwnFileHandler.extractFile(Paths.get(fileLoc), Paths.get(baseName));
+            processFilesInDirectory(Paths.get(extractFolder.getAbsolutePath()));
+            System.out.print("done\n");
+        }else{
+            System.out.print("ERROR: compression not supported\n");
         }
-        NwnFileHandler.extractFile(Paths.get(fileLoc),Paths.get(baseName));
-        System.out.print("done\n");
     }
 
     private void downloadFilesFromList(ArrayList<ServerFile> filesToDownload){
@@ -73,7 +92,7 @@ public class NwnUpdater implements Runnable{
                     + File.separator + serverFile.getName());
             //TODO: replace string with enum
             if(serverFile.getFolder().equals("compressed_tmp")){
-                uncompressFile(serverFile);
+                uncompressFile(serverFile.getName(), serverFile.getFolder());
             }
         }
     }
@@ -105,14 +124,21 @@ public class NwnUpdater implements Runnable{
             Set<String> folders = jsonObject.keySet();
 
             for(String folderName:folders){
-                affectedFolders.add(folderName);
-                JSONArray filesByFolder = (JSONArray)jsonObject.get(folderName);
-                Iterator fileItr = filesByFolder.iterator();
-                while (fileItr.hasNext()){
-                    System.out.print(".");
-                    JSONObject fileJson = (JSONObject) fileItr.next();
-                    URL fileUrl = new URL(fileJson.get("url").toString());
-                    serverFileList.add(new ServerFile(fileJson.get("name").toString(), fileUrl, folderName));
+                if(!folderName.contains("..") && !folderName.contains(":")) {
+                    affectedFolders.add(folderName);
+                    JSONArray filesByFolder = (JSONArray) jsonObject.get(folderName);
+                    Iterator fileItr = filesByFolder.iterator();
+                    while (fileItr.hasNext()) {
+                        System.out.print(".");
+                        JSONObject fileJson = (JSONObject) fileItr.next();
+                        URL fileUrl = new URL(fileJson.get("url").toString());
+                        serverFileList.add(new ServerFile(fileJson.get("name").toString(), fileUrl, folderName));
+                    }
+                }else{
+                    System.out.println("An unusual folder path was detected: " + folderName +
+                            "\nServer owner may be attempting to place files outside of NWN." +
+                            "\nThis folder has been excluded from the update."
+                    );
                 }
             }
             System.out.println();

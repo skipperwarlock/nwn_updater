@@ -96,7 +96,6 @@ public class NwnFileHandler {
         try{
             ZipFile zipFile = new ZipFile(file.toString());
             if(zipFile.isEncrypted()){
-                //todo: log error
                 System.out.println("Cannot extract from " + file.getFileName().toString() +": Password required.");
                 return false;
             }else{
@@ -132,7 +131,6 @@ public class NwnFileHandler {
 
                 int downloadStatus = (int)((bytesDownloaded/fileSize)*100);
 
-                //todo: remove once ui is implemented
                 System.out.println("Downloading " + fileUrl + " to " + dest + " " + downloadStatus + "%");
             }
             fis.close();
