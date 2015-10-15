@@ -24,6 +24,12 @@ public class NwnUpdater implements Runnable{
     private ArrayList<ServerFile> serverFileList;
     private ArrayList<String>     affectedFolders;
 
+    /**
+     * Create NwnUpdater object
+     * Also creates "compressed_tmp" folder if it does not exist
+     * @param newNwnRootPath
+     * @param newServerFileJson
+     */
     public NwnUpdater(Path newNwnRootPath, Path newServerFileJson) {
         serverFileList = new ArrayList<ServerFile>();
         affectedFolders = new ArrayList<String>();
@@ -36,15 +42,39 @@ public class NwnUpdater implements Runnable{
         }
     }
 
+    /**
+     * Start updater process
+     */
     @Override
     public void run() {
         parseServerFileJson();
         ArrayList<ServerFile> filesToDownload = determineFilesToDownload();
         downloadFilesFromList(filesToDownload);
-        //todo:delete any tmp data
+        //todo: ask user if they want temp files deleted
+        deleteFilesInDir(nwnRootPath + File.separator + "compressed_tmp");
         System.out.println("Update Process Complete");
     }
 
+    /**
+     * Deletes every file in given directory
+     * If a directory is found, it will be recursively deleted
+     * @param folderPath absolute path to directory to delete from
+     */
+    private void deleteFilesInDir(String folderPath) {
+        ArrayList<Path> fileList = NwnFileHandler.getFilesInDirectory(Paths.get(folderPath));
+        for (Path file : fileList) {
+            if (file.toFile().isDirectory()) {
+                deleteFilesInDir(file.toFile().getAbsolutePath());
+            }
+            file.toFile().delete();
+        }
+    }
+
+    /**
+     * Reads through every file in directory and determines correct action for each file based off the file extension
+     * Files will either be moved to the correct directory or extracted and processed.
+     * @param uncompressedFolder
+     */
     private void processFilesInDirectory(Path uncompressedFolder){
         ArrayList<String> fileNames = NwnFileHandler.getFilesNamesInDirectory(uncompressedFolder);
         for(String fileName:fileNames){
@@ -64,6 +94,11 @@ public class NwnUpdater implements Runnable{
         }
     }
 
+    /**
+     * 
+     * @param fileName
+     * @param parentFolder
+     */
     private void uncompressFile(String fileName, String parentFolder){
         System.out.print("Extracting " + fileName + "...");
         String fileLoc = nwnRootPath + File.separator + parentFolder + File.separator + fileName;
@@ -85,11 +120,16 @@ public class NwnUpdater implements Runnable{
         }
     }
 
+    /**
+     *
+     * @param filesToDownload
+     */
     private void downloadFilesFromList(ArrayList<ServerFile> filesToDownload){
-        //TODO: confirm files downloaded
         for(ServerFile serverFile:filesToDownload){
-            NwnFileHandler.downloadFile(serverFile.getUrl().toString(), nwnRootPath + File.separator + serverFile.getFolder()
-                    + File.separator + serverFile.getName());
+            if(!NwnFileHandler.downloadFile(serverFile.getUrl().toString(), nwnRootPath + File.separator + serverFile.getFolder()
+                    + File.separator + serverFile.getName())){
+                System.out.println("Error downloading file: " + serverFile.getName());
+            }
             //TODO: replace string with enum
             if(serverFile.getFolder().equals("compressed_tmp")){
                 uncompressFile(serverFile.getName(), serverFile.getFolder());
@@ -97,6 +137,10 @@ public class NwnUpdater implements Runnable{
         }
     }
 
+    /**
+     *
+     * @return
+     */
     private ArrayList<ServerFile> determineFilesToDownload(){
         System.out.print("Checking local files");
         ArrayList<ServerFile> filesToDownload = new ArrayList<ServerFile>();
@@ -115,6 +159,9 @@ public class NwnUpdater implements Runnable{
         return filesToDownload;
     }
 
+    /**
+     *
+     */
     private void parseServerFileJson(){
         System.out.print("Reading file list");
         try{
