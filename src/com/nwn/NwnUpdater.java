@@ -60,7 +60,7 @@ public class NwnUpdater implements Runnable{
      * If a directory is found, it will be recursively deleted
      * @param folderPath absolute path to directory to delete from
      */
-    private void deleteFilesInDir(String folderPath) {
+    private void deleteFilesInDir(String folderPath){
         ArrayList<Path> fileList = NwnFileHandler.getFilesInDirectory(Paths.get(folderPath));
         for (Path file : fileList) {
             if (file.toFile().isDirectory()) {
@@ -83,12 +83,15 @@ public class NwnUpdater implements Runnable{
                 processFilesInDirectory(srcFile);
             }else {
                 String folderName = NwnFileHandler.getFolderByExtension(fileName);
+                Path desiredFolder = Paths.get(nwnRootPath.toString() + File.separator + folderName);
                 Path desiredPath = Paths.get(nwnRootPath.toString() + File.separator + folderName + File.separator + fileName);
-                if (!desiredPath.toFile().exists()) {
+                if (!desiredPath.toFile().exists() && desiredFolder.toFile().exists()) {
                     NwnFileHandler.moveFile(srcFile, desiredPath);
                     if (folderName.equals("compressed_tmp")) {
                         uncompressFile(fileName, folderName);
                     }
+                }else if(!desiredFolder.toFile().exists()){
+                    System.out.println("ERROR: Folder " + folderName + " does not exist!");
                 }
             }
         }
@@ -113,8 +116,8 @@ public class NwnUpdater implements Runnable{
                 extractFolder.mkdir();
             }
             NwnFileHandler.extractFile(Paths.get(fileLoc), Paths.get(baseName));
-            processFilesInDirectory(Paths.get(extractFolder.getAbsolutePath()));
             System.out.print("done\n");
+            processFilesInDirectory(Paths.get(extractFolder.getAbsolutePath()));
         }else{
             System.out.print("ERROR: compression not supported\n");
         }
