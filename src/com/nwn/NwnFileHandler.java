@@ -45,6 +45,7 @@ public class NwnFileHandler {
             for (Path file : dirStream) {
                 fileNamesInDir.add(file.getFileName().toString());
             }
+            dirStream.close();
         }catch (IOException ex){
             ex.printStackTrace();
         }

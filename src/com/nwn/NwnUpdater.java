@@ -51,22 +51,40 @@ public class NwnUpdater implements Runnable{
         ArrayList<ServerFile> filesToDownload = determineFilesToDownload();
         downloadFilesFromList(filesToDownload);
         //todo: ask user if they want temp files deleted
-        deleteFilesInDir(nwnRootPath + File.separator + "compressed_tmp");
+        deleteDir(new File(nwnRootPath + File.separator + "compressed_tmp"));
         System.out.println("Update Process Complete");
     }
 
     /**
      * Deletes every file in given directory
      * If a directory is found, it will be recursively deleted
-     * @param folderPath absolute path to directory to delete from
+     * @param file directory or file to delete
      */
-    private void deleteFilesInDir(String folderPath){
-        ArrayList<Path> fileList = NwnFileHandler.getFilesInDirectory(Paths.get(folderPath));
-        for (Path file : fileList) {
-            if (file.toFile().isDirectory()) {
-                deleteFilesInDir(file.toFile().getAbsolutePath());
+    private void deleteDir(File file){
+        File[] contents = file.listFiles();
+        if (contents != null) {
+            for (File f : contents) {
+                deleteDir(f);
             }
-            file.toFile().delete();
+        }
+        file.delete();
+    }
+
+    /**
+     * For debugging file deletes
+     * @param file
+     * @return String of why file can't be deleted
+     */
+    private String getReasonForFileDeletionFailureInPlainEnglish(File file) {
+        try {
+            if (!file.exists())
+                return file.getName() + " It doesn't exist in the first place.";
+            else if (file.isDirectory() && file.list().length > 0)
+                return file.getName() + " It's a directory and it's not empty.\n";
+            else
+                return file.getName() + " Somebody else has it open, we don't have write permissions, or somebody stole my disk.";
+        } catch (SecurityException e) {
+            return file.getName() + " We're sandboxed and don't have filesystem access.";
         }
     }
 
@@ -117,7 +135,7 @@ public class NwnUpdater implements Runnable{
             }
             NwnFileHandler.extractFile(Paths.get(fileLoc), Paths.get(baseName));
             System.out.print("done\n");
-            processFilesInDirectory(Paths.get(extractFolder.getAbsolutePath()));
+            processFilesInDirectory(Paths.get(baseName));
         }else{
             System.out.print("ERROR: compression not supported\n");
         }
