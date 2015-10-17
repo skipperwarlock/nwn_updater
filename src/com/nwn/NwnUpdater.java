@@ -26,7 +26,7 @@ public class NwnUpdater implements Runnable{
 
     /**
      * Create NwnUpdater object
-     * Also creates "compressed_tmp" folder if it does not exist
+     * Also creates compressed folder if it does not exist
      * @param newNwnRootPath
      * @param newServerFileJson
      */
@@ -36,7 +36,7 @@ public class NwnUpdater implements Runnable{
         nwnRootPath = newNwnRootPath;
         serverFileJson = newServerFileJson;
 
-        File tmpFolder = new File(nwnRootPath.toString() + File.separator + "compressed_tmp");
+        File tmpFolder = new File(nwnRootPath.toString() + File.separator + FolderByExt.COMPRESSED.toString());
         if(!tmpFolder.exists()){
             tmpFolder.mkdir();
         }
@@ -51,7 +51,7 @@ public class NwnUpdater implements Runnable{
         ArrayList<ServerFile> filesToDownload = determineFilesToDownload();
         downloadFilesFromList(filesToDownload);
         //todo: ask user if they want temp files deleted
-        deleteDir(new File(nwnRootPath + File.separator + "compressed_tmp"));
+        deleteDir(new File(nwnRootPath + File.separator + FolderByExt.COMPRESSED.toString()));
         System.out.println("Update Process Complete");
     }
 
@@ -105,7 +105,7 @@ public class NwnUpdater implements Runnable{
                 Path desiredPath = Paths.get(nwnRootPath.toString() + File.separator + folderName + File.separator + fileName);
                 if (!desiredPath.toFile().exists() && desiredFolder.toFile().exists()) {
                     NwnFileHandler.moveFile(srcFile, desiredPath);
-                    if (folderName.equals("compressed_tmp")) {
+                    if (folderName.equals(FolderByExt.COMPRESSED.toString())) {
                         uncompressFile(fileName, folderName);
                     }
                 }else if(!desiredFolder.toFile().exists()){
@@ -151,8 +151,7 @@ public class NwnUpdater implements Runnable{
                     + File.separator + serverFile.getName())){
                 System.out.println("Error downloading file: " + serverFile.getName());
             }
-            //TODO: replace string with enum
-            if(serverFile.getFolder().equals("compressed_tmp")){
+            if(serverFile.getFolder().equals(FolderByExt.COMPRESSED.toString())){
                 uncompressFile(serverFile.getName(), serverFile.getFolder());
             }
         }
