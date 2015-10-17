@@ -1,0 +1,14 @@
+{
+  "ambient":[
+    {"name":"wavTest.wav", "md5":"", "url":"https://dl.dropboxusercontent.com/u/1827199/wavTest.wav"},
+  ],
+  "music":[
+    {"name":"bmuTest.bmu", "md5":"", "url":"https://dl.dropboxusercontent.com/u/1827199/bmuTest.bmu"}
+  ],
+  "hak":[
+    {"name":"hakTest.hak", "md5":"", "url":"https://dl.dropboxusercontent.com/u/1827199/hakTest.hak"}
+  ],
+  "compressed_tmp":[
+    {"name":"tibiamapswrap.zip", "md5":"", "url":"https://dl.dropboxusercontent.com/u/1827199/skal.zip"}
+  ]
+}
