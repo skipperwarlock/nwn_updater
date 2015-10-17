@@ -1,7 +1,8 @@
 package com.nwn;
 
 /**
- * Created by Sam on 10/16/2015.
+ * Keep track of which folders are associated with which file extensions
+ * note: getFolderByExtension checks statically for extension names. If you add here, add there also
  */
 public enum FolderByExt {
     BMU("music"),

@@ -50,9 +50,18 @@ public class NwnUpdater implements Runnable{
         parseServerFileJson();
         ArrayList<ServerFile> filesToDownload = determineFilesToDownload();
         downloadFilesFromList(filesToDownload);
-        //todo: ask user if they want temp files deleted
-        deleteDir(new File(nwnRootPath + File.separator + FolderByExt.COMPRESSED.toString()));
+        deleteDirWithMessage(new File(nwnRootPath + File.separator + FolderByExt.COMPRESSED.toString()));
         System.out.println("Update Process Complete");
+    }
+
+    /**
+     * Notification wrapper for deleteDir
+     * @param file directory or file to delete
+     */
+    private void deleteDirWithMessage(File file){
+        System.out.print("Cleaning up temporary files...");
+        deleteDir(file);
+        System.out.println("done");
     }
 
     /**
