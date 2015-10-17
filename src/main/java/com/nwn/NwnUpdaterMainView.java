@@ -10,22 +10,33 @@ import java.nio.file.Paths;
  * Created by Sam on 10/17/2015.
  */
 public class NwnUpdaterMainView extends JFrame{
-    private JButton btn1;
     private JPanel rootPanel;
+    private JButton btnCancel;
+    private JButton btnRun;
+    Thread updateThread;
 
     public NwnUpdaterMainView() {
         setContentPane(rootPanel);
         pack();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        btn1.addMouseListener(new MouseAdapter() {
+        btnRun.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
                 Path serverFileJson = Paths.get("test.json");
                 Path nwnDir = Paths.get("C:\\NeverwinterNights\\NWN");
                 NwnUpdater nwnUpdater = new NwnUpdater(nwnDir, serverFileJson);
-                Thread updateThread = new Thread(nwnUpdater, "Update Thread");
+                updateThread = new Thread(nwnUpdater, "Update Thread");
                 updateThread.start();
+            }
+        });
+        btnCancel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                super.mousePressed(e);
+                if(updateThread != null) {
+                    updateThread.interrupt();
+                }
             }
         });
         setVisible(true);
