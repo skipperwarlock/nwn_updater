@@ -13,6 +13,14 @@ public class NwnUpdaterMainView extends JFrame{
     private JPanel rootPanel;
     private JButton btnCancel;
     private JButton btnRun;
+    private JProgressBar progressBar1;
+    private JTextField textField1;
+    private JTextField textField2;
+    private JButton btnSelectNwn;
+    private JButton btnSelectServerFile;
+    private JTextArea usrOutputTxt;
+    private JScrollPane usrOutputScroll;
+    private JProgressBar progressBar2;
     Thread updateThread;
 
     public NwnUpdaterMainView() {
@@ -22,12 +30,16 @@ public class NwnUpdaterMainView extends JFrame{
         btnRun.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                super.mousePressed(e);
-                Path serverFileJson = Paths.get("test.json");
-                Path nwnDir = Paths.get("C:\\NeverwinterNights\\NWN");
-                NwnUpdater nwnUpdater = new NwnUpdater(nwnDir, serverFileJson);
-                updateThread = new Thread(nwnUpdater, "Update Thread");
-                updateThread.start();
+                if(btnRun.isEnabled()) {
+                    progressBar1.setValue(0);
+                    super.mousePressed(e);
+                    Path serverFileJson = Paths.get("test.json");
+                    Path nwnDir = Paths.get("C:\\NeverwinterNights\\NWN");
+                    NwnUpdater nwnUpdater = new NwnUpdater(nwnDir, serverFileJson);
+                    updateThread = new Thread(nwnUpdater, "Update Thread");
+                    updateThread.start();
+                    btnRun.setEnabled(false);
+                }
             }
         });
         btnCancel.addMouseListener(new MouseAdapter() {
@@ -37,6 +49,8 @@ public class NwnUpdaterMainView extends JFrame{
                 if(updateThread != null) {
                     updateThread.interrupt();
                 }
+                //todo: this will be removed with the ability to update multiple servers at once
+                btnRun.setEnabled(true);
             }
         });
         setVisible(true);
