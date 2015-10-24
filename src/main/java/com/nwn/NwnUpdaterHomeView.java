@@ -5,6 +5,9 @@
  */
 package com.nwn;
 
+import java.io.File;
+import javax.swing.JFileChooser;
+
 /**
  *
  * @author Sam
@@ -36,7 +39,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
                 jLabel1 = new javax.swing.JLabel();
                 btnRemoveServer = new javax.swing.JButton();
                 btnAddServer = new javax.swing.JButton();
-                jTextField1 = new javax.swing.JTextField();
+                txtNwnDir = new javax.swing.JTextField();
                 jLabel2 = new javax.swing.JLabel();
                 btnSelectNwnDir = new javax.swing.JButton();
 
@@ -63,11 +66,16 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
 
                 btnAddServer.setText("Add");
 
-                jTextField1.setText("C:\\NeverwinterNights\\NWN");
+                txtNwnDir.setText("C:\\NeverwinterNights\\NWN");
 
                 jLabel2.setText("NWN Dir:");
 
                 btnSelectNwnDir.setText("Browse");
+                btnSelectNwnDir.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                btnSelectNwnDirActionPerformed(evt);
+                        }
+                });
 
                 javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
                 getContentPane().setLayout(layout);
@@ -95,7 +103,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                         .addGroup(layout.createSequentialGroup()
-                                                                .addComponent(jTextField1)
+                                                                .addComponent(txtNwnDir)
                                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(btnSelectNwnDir))
                                                         .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
@@ -119,16 +127,17 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
                                         .addComponent(btnAddServer))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(txtNwnDir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(jLabel2)
                                         .addComponent(btnSelectNwnDir))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(btnStartUpdate)
-                                        .addComponent(btnClose)
-                                        .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                .addComponent(btnStartUpdate)
+                                                .addComponent(btnClose)))
                                 .addContainerGap())
                 );
 
@@ -138,6 +147,19 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
         private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
                 System.exit(0);
         }//GEN-LAST:event_btnCloseActionPerformed
+
+        private void btnSelectNwnDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectNwnDirActionPerformed
+                JFileChooser fc = new JFileChooser();
+		fc.setCurrentDirectory(new java.io.File("."));
+		fc.setDialogTitle("NWN Updater");
+		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		fc.setAcceptAllFileFilterUsed(false);
+		int returnVal = fc.showOpenDialog(txtNwnDir);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+		    File file = fc.getSelectedFile();
+		    txtNwnDir.setText(file.getAbsolutePath());
+		}
+        }//GEN-LAST:event_btnSelectNwnDirActionPerformed
 
 	/**
 	 * @param args the command line arguments
@@ -186,6 +208,6 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
         private javax.swing.JProgressBar jProgressBar1;
         private javax.swing.JScrollPane jScrollPane2;
         private javax.swing.JTextArea jTextArea1;
-        private javax.swing.JTextField jTextField1;
+        private javax.swing.JTextField txtNwnDir;
         // End of variables declaration//GEN-END:variables
 }
