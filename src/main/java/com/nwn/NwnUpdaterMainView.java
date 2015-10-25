@@ -20,7 +20,6 @@ public class NwnUpdaterMainView extends JFrame{
     private JButton btnSelectServerFile;
     private JTextArea usrOutputTxt;
     private JScrollPane usrOutputScroll;
-    private JProgressBar progressBar2;
     Thread updateThread;
 
     public NwnUpdaterMainView() {

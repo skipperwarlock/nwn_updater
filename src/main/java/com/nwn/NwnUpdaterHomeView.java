@@ -6,6 +6,18 @@
 package com.nwn;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 
 /**
@@ -13,14 +25,94 @@ import javax.swing.JFileChooser;
  * @author Sam
  */
 public class NwnUpdaterHomeView extends javax.swing.JFrame {
+	private String cfg = "NwnUpdater.cfg";
+	private ArrayList<ServerInfo> serverList = new ArrayList<ServerInfo>();
+	private Path nwnDir;
+	private Path serverFileJson;
 
 	/**
 	 * Creates new form NwnUpdaterHomeView
 	 */
 	public NwnUpdaterHomeView() {
 		initComponents();
+		loadConfig();
+		updateUIComponents();
 	}
 
+	private void updateUIComponents(){
+		if(nwnDir != null){
+			txtNwnDir.setText(nwnDir.toString());
+		}
+	}
+
+	private void generateConfig(){
+		OutputStream output = null;
+		try{
+			output = new FileOutputStream(cfg);
+			Properties prop = new Properties();
+			prop.setProperty("nwnDir", "C:\\NeverwinterNights\\NWN");
+			prop.setProperty("serverList","");
+			prop.store(output,null);
+		}catch(IOException ex){
+			ex.printStackTrace();
+		}finally{
+			if(output != null){
+				try{
+					output.close();
+				}catch(IOException ex){
+					ex.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	private void loadConfig(){
+		File cfgFile = new File(cfg);
+		if(!cfgFile.exists()){
+			generateConfig();
+		}
+		Properties prop = new Properties();
+		InputStream is = null;
+		try{
+			is = new FileInputStream(cfg);
+			prop.load(is);
+			nwnDir = Paths.get(prop.getProperty("nwnDir"));
+			parseServerList(prop.getProperty("serverList"));
+		}catch(IOException ex){
+			ex.printStackTrace();
+		}finally{
+			if(is != null){
+				try{
+					is.close();
+				}catch(IOException e){
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private void parseServerList(String serverListProperty){
+		String serverName;
+		String txtServerUrl;
+		URL serverUrl;
+		String pattern = "(ServerName\\:?[a-zA-Z0-9_\\./\\-\\:]+)(\\,)(FileUrl\\:?[a-zA-Z0-9\\-_\\./\\:]+)";
+	        Pattern testPattern = Pattern.compile(pattern);
+	        Matcher m = testPattern.matcher(serverListProperty);
+	        while(m.find()){
+			serverName   = m.group(1);
+			serverName   = serverName.substring(serverName.indexOf(':'));
+			txtServerUrl = m.group(3);
+			txtServerUrl = txtServerUrl.substring(txtServerUrl.indexOf(':'));
+			System.out.println("server name:" + serverName + " server url:" + txtServerUrl);
+			try{
+				serverUrl = new URL(txtServerUrl);
+				serverList.add(new ServerInfo(serverName,serverUrl));
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	/**
 	 * This method is called from within the constructor to initialize the
 	 * form. WARNING: Do NOT modify this code. The content of this method is
@@ -164,37 +256,37 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
 	/**
 	 * @param args the command line arguments
 	 */
-	public static void main(String args[]) {
-		/* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-		 * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-		 */
-		try {
-			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-				if ("Nimbus".equals(info.getName())) {
-					javax.swing.UIManager.setLookAndFeel(info.getClassName());
-					break;
-				}
-			}
-		} catch (ClassNotFoundException ex) {
-			java.util.logging.Logger.getLogger(NwnUpdaterHomeView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-		} catch (InstantiationException ex) {
-			java.util.logging.Logger.getLogger(NwnUpdaterHomeView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-		} catch (IllegalAccessException ex) {
-			java.util.logging.Logger.getLogger(NwnUpdaterHomeView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-		} catch (javax.swing.UnsupportedLookAndFeelException ex) {
-			java.util.logging.Logger.getLogger(NwnUpdaterHomeView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-		}
-        //</editor-fold>
-
-		/* Create and display the form */
-		java.awt.EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				new NwnUpdaterHomeView().setVisible(true);
-			}
-		});
-	}
+//	public static void main(String args[]) {
+//		/* Set the Nimbus look and feel */
+//        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+//        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+//		 * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+//		 */
+//		try {
+//			for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+//				if ("Nimbus".equals(info.getName())) {
+//					javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//					break;
+//				}
+//			}
+//		} catch (ClassNotFoundException ex) {
+//			java.util.logging.Logger.getLogger(NwnUpdaterHomeView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//		} catch (InstantiationException ex) {
+//			java.util.logging.Logger.getLogger(NwnUpdaterHomeView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//		} catch (IllegalAccessException ex) {
+//			java.util.logging.Logger.getLogger(NwnUpdaterHomeView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//		} catch (javax.swing.UnsupportedLookAndFeelException ex) {
+//			java.util.logging.Logger.getLogger(NwnUpdaterHomeView.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+//		}
+//        //</editor-fold>
+//
+//		/* Create and display the form */
+//		java.awt.EventQueue.invokeLater(new Runnable() {
+//			public void run() {
+//				new NwnUpdaterHomeView().setVisible(true);
+//			}
+//		});
+//	}
 
         // Variables declaration - do not modify//GEN-BEGIN:variables
         private javax.swing.JButton btnAddServer;
