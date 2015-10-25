@@ -6,6 +6,7 @@
 package com.nwn;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
@@ -185,18 +186,30 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
         }//GEN-LAST:event_btnSelectNwnDirActionPerformed
 
         private void btnAddServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddServerActionPerformed
-		String newServerName = (String)JOptionPane.showInputDialog(
-			    null,
-			    "Server Name:\n",
-			    "Add Server",
-			    JOptionPane.PLAIN_MESSAGE,
-			    null,
-			    null,
-			    "");
+		String newServerName, newServerFileUrl = null;
+		do{
+			newServerName = (String)JOptionPane.showInputDialog(
+							    null,
+							    "Server Name:\n",
+							    "Add Server",
+							    JOptionPane.PLAIN_MESSAGE);
+		}while((newServerName == null) || (newServerName.length() == 0)); //todo use regex pattern to validate
 
-		//If all checks out, ask for the server file url
-		if ((newServerName != null) && (newServerName.length() > 0)) {
-			
+		do{
+			newServerFileUrl = (String)JOptionPane.showInputDialog(
+							    null,
+							    "Server File URL:\n",
+							    "Add Server",
+							    JOptionPane.PLAIN_MESSAGE);
+		}while((newServerFileUrl == null) || (newServerFileUrl.length() == 0)); //todo use regex pattern to validate
+		try{
+			//todo: handle bad servername and url
+			ServerInfo newServer = new ServerInfo(newServerName, new URL(newServerFileUrl));
+			serverList.add(newServer);
+			cmbServerList.addItem(newServer);
+			//todo: add to config
+		}catch(Exception ex){
+			ex.printStackTrace();
 		}
         }//GEN-LAST:event_btnAddServerActionPerformed
 
