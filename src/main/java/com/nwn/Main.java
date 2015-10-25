@@ -119,9 +119,9 @@ public class Main {
 		Matcher m = testPattern.matcher(serverListProperty);
 		while(m.find()){
 			serverName   = m.group(1);
-			serverName   = serverName.substring(serverName.indexOf(':'));
+			serverName   = serverName.substring(serverName.indexOf(':')+1);
 			txtServerUrl = m.group(3);
-			txtServerUrl = txtServerUrl.substring(txtServerUrl.indexOf(':'));
+			txtServerUrl = txtServerUrl.substring(txtServerUrl.indexOf(':')+1);
 			System.out.println("server name:" + serverName + " server url:" + txtServerUrl);
 			try{
 				serverUrl = new URL(txtServerUrl);

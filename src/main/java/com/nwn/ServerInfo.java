@@ -19,6 +19,10 @@ public class ServerInfo {
 		this.serverName = serverName;
 		this.fileUrl = fileUrl;
 	}
+
+	public String toString(){
+		return serverName;
+	}
 	
 	/**
 	 * @return the serverName

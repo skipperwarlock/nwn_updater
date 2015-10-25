@@ -9,6 +9,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -33,6 +34,9 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
 		if(nwnDir != null){
 			txtNwnDir.setText(nwnDir.toString());
 		}
+		for(ServerInfo serverInfo:serverList){	
+			cmbServerList.addItem(serverInfo);
+		}
 	}
 	
 	/**
@@ -46,7 +50,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
 
                 btnStartUpdate = new javax.swing.JButton();
                 btnClose = new javax.swing.JButton();
-                jComboBox1 = new javax.swing.JComboBox();
+                cmbServerList = new javax.swing.JComboBox();
                 jProgressBar1 = new javax.swing.JProgressBar();
                 jScrollPane2 = new javax.swing.JScrollPane();
                 jTextArea1 = new javax.swing.JTextArea();
@@ -79,6 +83,11 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
                 btnRemoveServer.setText("Remove");
 
                 btnAddServer.setText("Add");
+                btnAddServer.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                btnAddServerActionPerformed(evt);
+                        }
+                });
 
                 txtNwnDir.setText("C:\\NeverwinterNights\\NWN");
 
@@ -120,7 +129,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
                                                                 .addComponent(txtNwnDir)
                                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(btnSelectNwnDir))
-                                                        .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                                        .addComponent(cmbServerList, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                                 .addContainerGap())
                 );
 
@@ -133,7 +142,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
                         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(cmbServerList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addComponent(jLabel1))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -174,6 +183,22 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
 		    txtNwnDir.setText(file.getAbsolutePath());
 		}
         }//GEN-LAST:event_btnSelectNwnDirActionPerformed
+
+        private void btnAddServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddServerActionPerformed
+		String newServerName = (String)JOptionPane.showInputDialog(
+			    null,
+			    "Server Name:\n",
+			    "Add Server",
+			    JOptionPane.PLAIN_MESSAGE,
+			    null,
+			    null,
+			    "");
+
+		//If all checks out, ask for the server file url
+		if ((newServerName != null) && (newServerName.length() > 0)) {
+			
+		}
+        }//GEN-LAST:event_btnAddServerActionPerformed
 
 	/**
 	 * @param args the command line arguments
@@ -216,7 +241,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
         private javax.swing.JButton btnRemoveServer;
         private javax.swing.JButton btnSelectNwnDir;
         private javax.swing.JButton btnStartUpdate;
-        private javax.swing.JComboBox jComboBox1;
+        private javax.swing.JComboBox cmbServerList;
         private javax.swing.JLabel jLabel1;
         private javax.swing.JLabel jLabel2;
         private javax.swing.JProgressBar jProgressBar1;
