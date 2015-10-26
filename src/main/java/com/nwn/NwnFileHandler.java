@@ -167,33 +167,4 @@ public class NwnFileHandler {
 
         return extension;
     }
-
-    /**
-     * Get suggested folder for file based off extension
-     * @param fileName String name of respective file
-     * @return String of folder name file should be placed in
-     */
-    public static String getFolderByExtension(String fileName){
-        String ext = getFileExtension(fileName);
-        String folder = ext;
-        switch (ext){
-            case "bmu":
-                folder = FolderByExt.BMU.toString();
-                break;
-            case "wav":
-                folder = FolderByExt.WAV.toString();
-                break;
-            case "hak":
-                folder = FolderByExt.HAK.toString();
-                break;
-            case "tlk":
-                folder = FolderByExt.TLK.toString();
-                break;
-            case "zip":
-                folder = FolderByExt.COMPRESSED.toString();
-                break;
-        }
-
-        return folder;
-    }
 }

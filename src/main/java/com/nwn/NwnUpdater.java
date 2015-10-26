@@ -109,7 +109,7 @@ public class NwnUpdater implements Runnable{
             if(srcFile.toFile().isDirectory()){
                 processFilesInDirectory(srcFile);
             }else {
-                String folderName = NwnFileHandler.getFolderByExtension(fileName);
+                String folderName = ServerFile.getFolderByExtension(fileName);
                 Path desiredFolder = Paths.get(nwnRootPath.toString() + File.separator + folderName);
                 Path desiredPath = Paths.get(nwnRootPath.toString() + File.separator + folderName + File.separator + fileName);
                 if (!desiredPath.toFile().exists() && desiredFolder.toFile().exists()) {

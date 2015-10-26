@@ -20,8 +20,9 @@ public class ServerInfo {
 		this.fileUrl = fileUrl;
 	}
 
+	@Override
 	public String toString(){
-		return serverName;
+		return "[ServerName:"+serverName+",FileUrl:"+fileUrl.toString()+"]";
 	}
 	
 	/**

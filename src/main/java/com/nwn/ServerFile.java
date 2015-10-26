@@ -9,12 +9,12 @@ public class ServerFile {
     private String name;
     private String md5;
     private String folder;
-    private URL url;
+    private URL    url;
 
     public ServerFile(String fileName, URL fileUrl){
         name = fileName;
         url = fileUrl;
-        folder = NwnFileHandler.getFolderByExtension(fileName).toLowerCase();
+        folder = getFolderByExtension(fileName).toLowerCase();
     }
 
     public ServerFile(String fileName, URL fileUrl, String fileFolder){
@@ -30,6 +30,7 @@ public class ServerFile {
         md5 = fileMd5;
     }
 
+    @Override
     public String toString(){
         return "Name: " + getName() + "\nFolder: " + getFolder() + "\nMd5: " + getMd5() + "\nUrl: " + getUrl();
     }
@@ -64,5 +65,34 @@ public class ServerFile {
 
     public void setUrl(URL newUrl){
         url = newUrl;
+    }
+    
+    /**
+     * Get suggested folder for file based off extension
+     * @param fileName String name of respective file
+     * @return String of folder name file should be placed in
+     */
+    public static String getFolderByExtension(String fileName){
+        String ext = NwnFileHandler.getFileExtension(fileName);
+        String folder = ext;
+        switch (ext){
+            case "bmu":
+                folder = FolderByExt.BMU.toString();
+                break;
+            case "wav":
+                folder = FolderByExt.WAV.toString();
+                break;
+            case "hak":
+                folder = FolderByExt.HAK.toString();
+                break;
+            case "tlk":
+                folder = FolderByExt.TLK.toString();
+                break;
+            case "zip":
+                folder = FolderByExt.COMPRESSED.toString();
+                break;
+        }
+
+        return folder;
     }
 }
