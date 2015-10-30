@@ -22,6 +22,13 @@ public class ServerInfo {
 
 	@Override
 	public String toString(){
+		return serverName;
+	}
+
+	/**
+	 * @return string used for config file 
+	 */
+	public String getPropertyString(){
 		return "[ServerName:"+serverName+",FileUrl:"+fileUrl.toString()+"]";
 	}
 	

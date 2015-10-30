@@ -11,7 +11,14 @@ public class Main {
 		Path nwnDir = Paths.get("C:\\NeverwinterNights\\NWN");
 		NwnUpdater nwnUpdater = new NwnUpdater(nwnDir, serverFileJson);
 		Thread updateThread = new Thread(nwnUpdater, "Update Thread");
+		System.out.println(updateThread.getState());
+		System.out.println(updateThread.isAlive());
 		updateThread.start();
+		System.out.println(updateThread.getState());
+		System.out.println(updateThread.isAlive());
+		nwnUpdater.terminate();
+		System.out.println(updateThread.getState());
+		System.out.println(updateThread.isAlive());
 	}
 
 	private static void launchHomeView(){
@@ -37,7 +44,7 @@ public class Main {
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				new NwnUpdaterHomeView(nwnUpdaterConfig.getInstance().getNwnDir(), nwnUpdaterConfig.getInstance().getServerList()).setVisible(true);
+				new NwnUpdaterHomeView().setVisible(true);
 			}
 		});
 	}
@@ -53,7 +60,8 @@ public class Main {
 	}
 
 	public static void main(String[] args) throws Exception{
-//		nwnUpdaterConfig.loadConfig("NwnUpdater.cfg");
+		updaterThreadExample();
+//		nwnUpdaterConfig.getInstance().load("NwnUpdater.cfg");
 //		launchHomeView();
 	}
 

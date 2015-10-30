@@ -8,6 +8,7 @@ package com.nwn;
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -17,25 +18,22 @@ import javax.swing.JOptionPane;
  * @author Sam
  */
 public class NwnUpdaterHomeView extends javax.swing.JFrame {
-	private ArrayList<ServerInfo> serverList;
-	private Path nwnDir;
-	private Path serverFileJson;
+	private nwnUpdaterConfig config = nwnUpdaterConfig.getInstance();
+	private Thread updaterThread;
 
 	/**
 	 * Creates new form NwnUpdaterHomeView
 	 */
-	public NwnUpdaterHomeView(Path nwnDir, ArrayList<ServerInfo> serverList) {
-		this.nwnDir = nwnDir;
-		this.serverList = new ArrayList<ServerInfo>(serverList);
+	public NwnUpdaterHomeView() {
 		initComponents();
 		updateUIComponents();
 	}
 
 	private void updateUIComponents(){
-		if(nwnDir != null){
-			txtNwnDir.setText(nwnDir.toString());
+		if(config.getNwnDir() != null){
+			txtNwnDir.setText(config.getNwnDir().toString());
 		}
-		for(ServerInfo serverInfo:serverList){	
+		for(ServerInfo serverInfo:config.getServerList()){	
 			cmbServerList.addItem(serverInfo);
 		}
 	}
@@ -65,6 +63,11 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
                 setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
                 btnStartUpdate.setText("Update");
+                btnStartUpdate.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                btnStartUpdateActionPerformed(evt);
+                        }
+                });
 
                 btnClose.setText("Close");
                 btnClose.addActionListener(new java.awt.event.ActionListener() {
@@ -82,6 +85,11 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
                 jLabel1.setText("Server:");
 
                 btnRemoveServer.setText("Remove");
+                btnRemoveServer.addActionListener(new java.awt.event.ActionListener() {
+                        public void actionPerformed(java.awt.event.ActionEvent evt) {
+                                btnRemoveServerActionPerformed(evt);
+                        }
+                });
 
                 btnAddServer.setText("Add");
                 btnAddServer.addActionListener(new java.awt.event.ActionListener() {
@@ -169,7 +177,9 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
         }// </editor-fold>//GEN-END:initComponents
 
         private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
-                System.exit(0);
+		config.setNwnDir(txtNwnDir.getText());
+		config.save();
+		System.exit(0);
         }//GEN-LAST:event_btnCloseActionPerformed
 
         private void btnSelectNwnDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectNwnDirActionPerformed
@@ -193,25 +203,62 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
 							    "Server Name:\n",
 							    "Add Server",
 							    JOptionPane.PLAIN_MESSAGE);
-		}while((newServerName == null) || (newServerName.length() == 0)); //todo use regex pattern to validate
-
+			if(newServerName == null){
+				break;
+			}
+		}while((newServerName.length() == 0)); //todo use regex pattern to validate
 		do{
+			if(newServerName == null){
+				break;
+			}
 			newServerFileUrl = (String)JOptionPane.showInputDialog(
 							    null,
 							    "Server File URL:\n",
 							    "Add Server",
 							    JOptionPane.PLAIN_MESSAGE);
-		}while((newServerFileUrl == null) || (newServerFileUrl.length() == 0)); //todo use regex pattern to validate
-		try{
-			//todo: handle bad servername and url
-			ServerInfo newServer = new ServerInfo(newServerName, new URL(newServerFileUrl));
-			serverList.add(newServer);
-			cmbServerList.addItem(newServer);
-			//todo: add to config
-		}catch(Exception ex){
-			ex.printStackTrace();
+			if(newServerFileUrl == null){
+				break;
+			}
+		}while((newServerFileUrl.length() == 0)); //todo use regex pattern to validate
+		if(newServerName != null && newServerFileUrl != null){
+			try{
+				//todo: handle bad servername and url
+				ServerInfo newServer = new ServerInfo(newServerName, new URL(newServerFileUrl));
+				config.getServerList().add(newServer);
+				cmbServerList.addItem(newServer);
+				nwnUpdaterConfig.getInstance().save();
+			}catch(Exception ex){
+				ex.printStackTrace();
+			}
 		}
         }//GEN-LAST:event_btnAddServerActionPerformed
+
+        private void btnRemoveServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveServerActionPerformed
+                config.getServerList().remove(cmbServerList.getSelectedItem());
+		cmbServerList.removeItemAt(cmbServerList.getSelectedIndex());
+		config.save();
+        }//GEN-LAST:event_btnRemoveServerActionPerformed
+
+        private void btnStartUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartUpdateActionPerformed
+		if(!updaterThread.isAlive()){
+			btnStartUpdate.setText("Stop");
+			ServerInfo selectedServer = (ServerInfo)cmbServerList.getSelectedItem();
+			config.setNwnDir(txtNwnDir.getText());
+			config.save();
+			File tmpDir = new File(config.getNwnDir().toString() + File.separator + "tmp");
+			if(!tmpDir.exists()){
+				tmpDir.mkdir();
+			}
+			NwnFileHandler.downloadFile(selectedServer.getFileUrl().toString(), tmpDir.toString() + File.separator + selectedServer.getServerName() + ".json");
+			Path serverJson = Paths.get(tmpDir.toString() + File.separator + selectedServer.getServerName() + ".json");
+			NwnUpdater nwnUpdater = new NwnUpdater(config.getNwnDir(), serverJson);
+			updaterThread = new Thread(nwnUpdater, "Update Thread");
+			updaterThread.start();
+		}else{
+			updaterThread.interrupt();
+			btnStartUpdate.setText("Update");
+		}
+        }//GEN-LAST:event_btnStartUpdateActionPerformed
 
 	/**
 	 * @param args the command line arguments

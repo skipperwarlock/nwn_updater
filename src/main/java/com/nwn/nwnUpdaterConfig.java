@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 public class nwnUpdaterConfig {
 	private Path	              nwnDir;
 	private ArrayList<ServerInfo> serverList;
+	private String		      fileName;
 
 	private static nwnUpdaterConfig instance = null;
 	
@@ -95,14 +96,16 @@ public class nwnUpdaterConfig {
 	}
 
 	public void load(String cfg){
-		nwnDir = null;
-		serverList = new ArrayList<>();
+		nwnDir       = null;
+		serverList   = new ArrayList<>();
+		fileName     = cfg;
 		File cfgFile = new File(cfg);
+
 		if(!cfgFile.exists()){
 			generateConfig(cfg);
 		}
 		Properties prop = new Properties();
-		InputStream is = null;
+		InputStream is  = null;
 		try{
 			is = new FileInputStream(cfg);
 			prop.load(is);
@@ -120,7 +123,57 @@ public class nwnUpdaterConfig {
 			}
 		}
 	}
-
+	
+	public void save(){
+		String serverListPropertyString = "";
+		for(ServerInfo serverInfo:serverList){
+			serverListPropertyString += serverInfo.getPropertyString();
+		}
+		OutputStream output = null;
+		try{
+			output          = new FileOutputStream(this.fileName);
+			Properties prop = new Properties();
+			prop.setProperty("nwnDir", nwnDir.toString());
+			prop.setProperty("serverList", serverListPropertyString);
+			prop.store(output,null);
+		}catch(IOException ex){
+			ex.printStackTrace();
+		}finally{
+			if(output != null){
+				try{
+					output.close();
+				}catch(IOException ex){
+					ex.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public void saveAs(String cfg){
+		String serverListPropertyString = "";
+		for(ServerInfo serverInfo:serverList){
+			serverListPropertyString += serverInfo.getPropertyString();
+		}
+		OutputStream output = null;
+		try{
+			output          = new FileOutputStream(cfg);
+			Properties prop = new Properties();
+			prop.setProperty("nwnDir", nwnDir.toString());
+			prop.setProperty("serverList", serverListPropertyString);
+			prop.store(output,null);
+		}catch(IOException ex){
+			ex.printStackTrace();
+		}finally{
+			if(output != null){
+				try{
+					output.close();
+				}catch(IOException ex){
+					ex.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	private void parseServerList(String serverListProperty){
 		String serverName;
 		String txtServerUrl;
