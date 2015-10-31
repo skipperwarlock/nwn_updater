@@ -25,6 +25,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 	 * Creates new form NwnUpdaterHomeView
 	 */
 	public NwnUpdaterHomeView() {
+		NwnUpdaterGuiController.getInstance().setGui(this);
 		initComponents();
 		updateUIComponents();
 	}
@@ -244,31 +245,37 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 			startUpdateThread();
 		}else if(updaterThread.isAlive()){
 			updaterThread.interrupt();
+			btnStartUpdate.setEnabled(false);
 			try{
 				updaterThread.join();//wait for thread to close
 			}catch(InterruptedException ex){
 				ex.printStackTrace();
 			}
-			btnStartUpdate.setText("Update");
+			btnStartUpdate.setEnabled(true);
 		}else{
 			startUpdateThread();
 		}
         }//GEN-LAST:event_btnStartUpdateActionPerformed
 
+	public void setUpdateBtnText(String newText){
+		btnStartUpdate.setText(newText);
+	}
+	
 	private void startUpdateThread(){
-			btnStartUpdate.setText("Stop");
-			ServerInfo selectedServer = (ServerInfo)cmbServerList.getSelectedItem();
-			config.setNwnDir(txtNwnDir.getText());
-			config.save();
-			File serverFileDir = new File(config.getNwnDir().toString() + File.separator + "ServerFiles");
-			if(!serverFileDir.exists()){
-				serverFileDir.mkdir();
-			}
-			NwnFileHandler.downloadFile(selectedServer.getFileUrl().toString(), serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
-			Path serverJson = Paths.get(serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
-			NwnUpdater nwnUpdater = new NwnUpdater(config.getNwnDir(), serverJson);
-			updaterThread = new Thread(nwnUpdater, "Update Thread");
-			updaterThread.start();
+		btnStartUpdate.setEnabled(false);
+		ServerInfo selectedServer = (ServerInfo)cmbServerList.getSelectedItem();
+		config.setNwnDir(txtNwnDir.getText());
+		config.save();
+		File serverFileDir = new File(config.getNwnDir().toString() + File.separator + "ServerFiles");
+		if(!serverFileDir.exists()){
+			serverFileDir.mkdir();
+		}
+		NwnFileHandler.downloadFile(selectedServer.getFileUrl().toString(), serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
+		Path serverJson = Paths.get(serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
+		NwnUpdater nwnUpdater = new NwnUpdater(config.getNwnDir(), serverJson);
+		updaterThread = new Thread(nwnUpdater, "Update Thread");
+		updaterThread.start();
+		btnStartUpdate.setEnabled(true);
 	}
 	
 	/**

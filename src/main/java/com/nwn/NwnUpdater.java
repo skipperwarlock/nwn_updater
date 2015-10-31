@@ -51,6 +51,8 @@ public class NwnUpdater implements Runnable{
      */
     @Override
     public void run() {
+	NwnUpdaterGuiController.getInstance().setGuiUpdateBtn("Stop");
+	    
 	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
         parseServerFileJson();
 	
@@ -79,6 +81,7 @@ public class NwnUpdater implements Runnable{
     private void cleanup(){
 	//todo: check what exists before we delete everything
         deleteDirWithMessage(new File(nwnRootPath + File.separator + FolderByExt.COMPRESSED.toString()));
+	NwnUpdaterGuiController.getInstance().setGuiUpdateBtn("Update");
     }
 
     /**
