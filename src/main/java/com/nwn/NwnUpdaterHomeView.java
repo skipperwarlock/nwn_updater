@@ -9,9 +9,9 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.text.DefaultCaret;
 
 /**
  *
@@ -52,13 +52,16 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
                 cmbServerList = new javax.swing.JComboBox();
                 progressBarOverall = new javax.swing.JProgressBar();
                 jScrollPane2 = new javax.swing.JScrollPane();
-                jTextArea1 = new javax.swing.JTextArea();
+                txtOutput = new javax.swing.JTextArea();
+                DefaultCaret caret = (DefaultCaret) txtOutput.getCaret();
+                caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
                 jLabel1 = new javax.swing.JLabel();
                 btnRemoveServer = new javax.swing.JButton();
                 btnAddServer = new javax.swing.JButton();
                 txtNwnDir = new javax.swing.JTextField();
                 jLabel2 = new javax.swing.JLabel();
                 btnSelectNwnDir = new javax.swing.JButton();
+                progressBarTask = new javax.swing.JProgressBar();
 
                 setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -76,11 +79,13 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
                         }
                 });
 
-                jTextArea1.setEditable(false);
-                jTextArea1.setColumns(20);
-                jTextArea1.setRows(5);
-                jTextArea1.setText("NWN Server Updater \nversion: 4.00\nBy: Skipper Warlock");
-                jScrollPane2.setViewportView(jTextArea1);
+                txtOutput.setEditable(false);
+                txtOutput.setColumns(20);
+                txtOutput.setLineWrap(true);
+                txtOutput.setRows(5);
+                txtOutput.setText("NWN Server Updater \nversion: 4.00\nBy: Skipper Warlock");
+                txtOutput.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+                jScrollPane2.setViewportView(txtOutput);
 
                 jLabel1.setText("Server:");
 
@@ -116,18 +121,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
                         .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addComponent(progressBarOverall, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(btnStartUpdate)
-                                                .addGap(2, 2, 2)
-                                                .addComponent(btnClose))
                                         .addComponent(jScrollPane2)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                                .addGap(0, 0, Short.MAX_VALUE)
-                                                .addComponent(btnAddServer)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(btnRemoveServer))
                                         .addGroup(layout.createSequentialGroup()
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                                         .addComponent(jLabel1)
@@ -138,7 +132,19 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
                                                                 .addComponent(txtNwnDir)
                                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                                 .addComponent(btnSelectNwnDir))
-                                                        .addComponent(cmbServerList, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                                        .addComponent(cmbServerList, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addComponent(btnAddServer)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(btnRemoveServer))
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                                        .addComponent(progressBarTask, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 401, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addComponent(progressBarOverall, javax.swing.GroupLayout.PREFERRED_SIZE, 401, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(btnStartUpdate)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(btnClose)))
                                 .addContainerGap())
                 );
 
@@ -146,9 +152,11 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 
                 layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {btnAddServer, btnRemoveServer});
 
+                layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {progressBarOverall, progressBarTask});
+
                 layout.setVerticalGroup(
                         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(cmbServerList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -163,15 +171,19 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
                                         .addComponent(jLabel2)
                                         .addComponent(btnSelectNwnDir))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(progressBarOverall, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                                .addComponent(btnStartUpdate)
-                                                .addComponent(btnClose)))
-                                .addContainerGap())
+                                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 374, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addGroup(layout.createSequentialGroup()
+                                                .addComponent(progressBarTask, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(progressBarOverall, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(btnStartUpdate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(btnClose, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 );
+
+                layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {progressBarOverall, progressBarTask});
 
                 pack();
         }// </editor-fold>//GEN-END:initComponents
@@ -264,7 +276,18 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 		progressBarOverall.setValue(newValue);
 	}
 	
+	public void setTaskProgressBarValue(int newValue){
+		progressBarTask.setValue(newValue);
+	}
+
+	public void appendOutputText(String newText){
+		txtOutput.append(newText);
+	}
+
+	
 	private void startUpdateThread(){
+		progressBarTask.setValue(0);
+		progressBarOverall.setValue(0);
 		btnStartUpdate.setEnabled(false);
 		ServerInfo selectedServer = (ServerInfo)cmbServerList.getSelectedItem();
 		config.setNwnDir(txtNwnDir.getText());
@@ -326,8 +349,9 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
         private javax.swing.JLabel jLabel1;
         private javax.swing.JLabel jLabel2;
         private javax.swing.JScrollPane jScrollPane2;
-        private javax.swing.JTextArea jTextArea1;
         private javax.swing.JProgressBar progressBarOverall;
+        private javax.swing.JProgressBar progressBarTask;
         private javax.swing.JTextField txtNwnDir;
+        private javax.swing.JTextArea txtOutput;
         // End of variables declaration//GEN-END:variables
 }
