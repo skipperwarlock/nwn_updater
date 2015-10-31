@@ -27,6 +27,7 @@ public class NwnUpdater implements Runnable{
     private Path                  serverFileJson;
     private ArrayList<ServerFile> serverFileList;
     private ArrayList<String>     affectedFolders;
+    private NwnUpdaterHomeView    currentGui;
 
     /**
      * Create NwnUpdater object
@@ -34,11 +35,12 @@ public class NwnUpdater implements Runnable{
      * @param newNwnRootPath
      * @param newServerFileJson
      */
-    public NwnUpdater(Path newNwnRootPath, Path newServerFileJson) {
-        serverFileList = new ArrayList<ServerFile>();
+    public NwnUpdater(Path newNwnRootPath, Path newServerFileJson, NwnUpdaterHomeView gui) {
+        serverFileList  = new ArrayList<ServerFile>();
         affectedFolders = new ArrayList<String>();
-        nwnRootPath = newNwnRootPath;
-        serverFileJson = newServerFileJson;
+        nwnRootPath     = newNwnRootPath;
+        serverFileJson  = newServerFileJson;
+	currentGui      = gui;
 
         File tmpFolder = new File(nwnRootPath.toString() + File.separator + FolderByExt.COMPRESSED.toString());
         if(!tmpFolder.exists()){
@@ -51,16 +53,19 @@ public class NwnUpdater implements Runnable{
      */
     @Override
     public void run() {
-	NwnUpdaterGuiController.getInstance().setGuiUpdateBtn("Stop");
+	currentGui.setUpdateBtnText("Stop");    
 	    
 	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
         parseServerFileJson();
+	currentGui.setOverallProgressBarValue(5);
 	
 	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
         ArrayList<ServerFile> filesToDownload = determineFilesToDownload();
+	currentGui.setOverallProgressBarValue(10);
 	
 	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
         downloadFilesFromList(filesToDownload);
+	currentGui.setOverallProgressBarValue(90);
 	
 	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
 	cleanup();
@@ -81,7 +86,8 @@ public class NwnUpdater implements Runnable{
     private void cleanup(){
 	//todo: check what exists before we delete everything
         deleteDirWithMessage(new File(nwnRootPath + File.separator + FolderByExt.COMPRESSED.toString()));
-	NwnUpdaterGuiController.getInstance().setGuiUpdateBtn("Update");
+	currentGui.setOverallProgressBarValue(100);
+	currentGui.setUpdateBtnText("Update");
     }
 
     /**
@@ -254,7 +260,7 @@ public class NwnUpdater implements Runnable{
     private void parseServerFileJson(){
         System.out.print("Reading file list");
         try{
-            FileReader reader = new FileReader("test.json");
+            FileReader reader = new FileReader(serverFileJson.toString());
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
             Set<String> folders = jsonObject.keySet();

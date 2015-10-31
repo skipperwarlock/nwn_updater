@@ -25,7 +25,6 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 	 * Creates new form NwnUpdaterHomeView
 	 */
 	public NwnUpdaterHomeView() {
-		NwnUpdaterGuiController.getInstance().setGui(this);
 		initComponents();
 		updateUIComponents();
 	}
@@ -51,7 +50,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
                 btnStartUpdate = new javax.swing.JButton();
                 btnClose = new javax.swing.JButton();
                 cmbServerList = new javax.swing.JComboBox();
-                jProgressBar1 = new javax.swing.JProgressBar();
+                progressBarOverall = new javax.swing.JProgressBar();
                 jScrollPane2 = new javax.swing.JScrollPane();
                 jTextArea1 = new javax.swing.JTextArea();
                 jLabel1 = new javax.swing.JLabel();
@@ -118,7 +117,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
                                 .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(layout.createSequentialGroup()
-                                                .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
+                                                .addComponent(progressBarOverall, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
                                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(btnStartUpdate)
                                                 .addGap(2, 2, 2)
@@ -167,7 +166,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
                                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(progressBarOverall, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                                 .addComponent(btnStartUpdate)
                                                 .addComponent(btnClose)))
@@ -261,18 +260,22 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 		btnStartUpdate.setText(newText);
 	}
 	
+	public void setOverallProgressBarValue(int newValue){
+		progressBarOverall.setValue(newValue);
+	}
+	
 	private void startUpdateThread(){
 		btnStartUpdate.setEnabled(false);
 		ServerInfo selectedServer = (ServerInfo)cmbServerList.getSelectedItem();
 		config.setNwnDir(txtNwnDir.getText());
 		config.save();
-		File serverFileDir = new File(config.getNwnDir().toString() + File.separator + "ServerFiles");
+		File serverFileDir = new File(config.getNwnDir().toString() + File.separator + "UpdaterServerFiles");
 		if(!serverFileDir.exists()){
 			serverFileDir.mkdir();
 		}
 		NwnFileHandler.downloadFile(selectedServer.getFileUrl().toString(), serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
 		Path serverJson = Paths.get(serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
-		NwnUpdater nwnUpdater = new NwnUpdater(config.getNwnDir(), serverJson);
+		NwnUpdater nwnUpdater = new NwnUpdater(config.getNwnDir(), serverJson, this);
 		updaterThread = new Thread(nwnUpdater, "Update Thread");
 		updaterThread.start();
 		btnStartUpdate.setEnabled(true);
@@ -322,9 +325,9 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
         private javax.swing.JComboBox cmbServerList;
         private javax.swing.JLabel jLabel1;
         private javax.swing.JLabel jLabel2;
-        private javax.swing.JProgressBar jProgressBar1;
         private javax.swing.JScrollPane jScrollPane2;
         private javax.swing.JTextArea jTextArea1;
+        private javax.swing.JProgressBar progressBarOverall;
         private javax.swing.JTextField txtNwnDir;
         // End of variables declaration//GEN-END:variables
 }
