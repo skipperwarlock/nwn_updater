@@ -1,15 +1,17 @@
 package com.nwn;
 
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created by Sam on 10/11/2015.
  */
 public class ServerFile {
-    private String name;
-    private String md5;
-    private String folder;
-    private URL    url;
+    private String	      name;
+    private String	      md5;
+    private String	      folder;
+    private URL		      url;
+    private ArrayList<String> fileList; //compressed files only
 
     public ServerFile(String fileName, URL fileUrl){
         name = fileName;
@@ -30,11 +32,26 @@ public class ServerFile {
         md5 = fileMd5;
     }
 
-    @Override
-    public String toString(){
-        return "Name: " + getName() + "\nFolder: " + getFolder() + "\nMd5: " + getMd5() + "\nUrl: " + getUrl();
+    public ServerFile(String fileName, URL fileUrl, String fileFolder, ArrayList<String> files){
+        name = fileName;
+        url = fileUrl;
+        folder = fileFolder;
+		fileList = files;
     }
 
+    @Override
+    public String toString(){
+		if(fileList == null){
+			return "Name: " + getName() + "\nFolder: " + getFolder() + "\nMd5: " + getMd5() + "\nUrl: " + getUrl();
+		}else{
+			return "Name: " + getName() + "\nFolder: " + getFolder() + "\nUrl: " + getUrl() + fileList.toString();
+		}
+    }
+
+    public ArrayList<String> getFileList(){
+	    return fileList;
+    }
+    
     public String getMd5(){
         return md5;
     }
@@ -50,6 +67,21 @@ public class ServerFile {
     public String getFolder(){
         return folder;
     }
+
+    public void addFileToList(String fileName){
+        fileList.add(fileName);
+    }
+
+    public void removeFileFromList(String fileName){
+        fileList.remove(fileName);
+    }
+
+	public void deleteFileList(){
+		for(String file:fileList){
+			fileList.remove(file);
+		}
+		fileList = null;
+	}
 
     public void setMd5(String newMd5){
         md5 = newMd5;

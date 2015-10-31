@@ -40,15 +40,15 @@ public class NwnUpdater implements Runnable{
         affectedFolders = new ArrayList<String>();
         nwnRootPath     = newNwnRootPath;
         serverFileJson  = newServerFileJson;
-	currentGui      = gui;
+		currentGui      = gui;
 
         File tmpFolder = new File(nwnRootPath.toString() + File.separator + FolderByExt.COMPRESSED.toString());
         if(!tmpFolder.exists()){
             tmpFolder.mkdir();
         }else{
-	    deleteDirWithMessage(tmpFolder);
-	    tmpFolder.mkdir();
-	}
+		    deleteDirWithMessage(tmpFolder);
+		    tmpFolder.mkdir();
+		}
     }
 
     /**
@@ -56,25 +56,25 @@ public class NwnUpdater implements Runnable{
      */
     @Override
     public void run() {
-	currentGui.setUpdateBtnText("Stop");    
+		currentGui.setUpdateBtnText("Stop");    
 	    
-	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
+		if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
         if(!parseServerFileJson()){cleanup();printExitStatus(2);return;}
-	currentGui.setOverallProgressBarValue(5);
+		currentGui.setOverallProgressBarValue(5);
 	
-	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
+		if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
         ArrayList<ServerFile> filesToDownload = determineFilesToDownload();
-	currentGui.setOverallProgressBarValue(10);
+		currentGui.setOverallProgressBarValue(10);
 	
-	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
-	if(filesToDownload.size() > 0){
-	    downloadFilesFromList(filesToDownload);
-	}else{cleanup();printExitStatus(3);return;}
-	currentGui.setOverallProgressBarValue(90);
+		if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
+		if(filesToDownload.size() > 0){
+		    downloadFilesFromList(filesToDownload);
+		}else{cleanup();printExitStatus(3);return;}
+		currentGui.setOverallProgressBarValue(90);
 	
-	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
-	cleanup();
-	printExitStatus(0);
+		if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
+		cleanup();
+		printExitStatus(0);
     }
 
     private void printExitStatus(int status){
@@ -90,11 +90,11 @@ public class NwnUpdater implements Runnable{
     }
     
     private void cleanup(){
-	currentGui.setTaskProgressBarValue(50);
+		currentGui.setTaskProgressBarValue(50);
         deleteDirWithMessage(new File(nwnRootPath + File.separator + FolderByExt.COMPRESSED.toString()));
-	currentGui.setTaskProgressBarValue(100);
-	currentGui.setOverallProgressBarValue(100);
-	currentGui.setUpdateBtnText("Update");
+		currentGui.setTaskProgressBarValue(100);
+		currentGui.setOverallProgressBarValue(100);
+		currentGui.setUpdateBtnText("Update");
     }
 
     /**
@@ -102,9 +102,9 @@ public class NwnUpdater implements Runnable{
      * @param file directory or file to delete
      */
     private void deleteDirWithMessage(File file){
-	currentGui.appendOutputText("\nCleaning up temporary files...");
+		currentGui.appendOutputText("\nCleaning up temporary files...");
         NwnFileHandler.deleteDir(file);
-	currentGui.appendOutputText("done");
+		currentGui.appendOutputText("done");
     }
 
     /**
@@ -132,7 +132,7 @@ public class NwnUpdater implements Runnable{
      * @return True if download success, False if download failed
      */
     public boolean interruptableDownloadFile(String fileUrl, String dest){
-	currentGui.appendOutputText("\nDownloading "+fileUrl+" to "+dest+"...");
+		currentGui.appendOutputText("\nDownloading "+fileUrl+" to "+dest+"...");
         try{
             URL url = new URL(fileUrl);
             BufferedInputStream bis = new BufferedInputStream(url.openStream());
@@ -142,25 +142,29 @@ public class NwnUpdater implements Runnable{
             byte[] buffer = new byte[1024];
             int count;
             double bytesDownloaded = 0.0;
-	    currentGui.setTaskProgressBarValue(0);
+		    currentGui.setTaskProgressBarValue(0);
             while((count = bis.read(buffer,0,1024)) != -1 && !Thread.currentThread().isInterrupted())
             {
                 bytesDownloaded += count;
                 fis.write(buffer, 0, count);
-		if(fileSize > 0){
-                int downloadStatus = (int)((bytesDownloaded/fileSize)*100);
-		    currentGui.setTaskProgressBarValue(downloadStatus);
+				if(fileSize > 0){
+					int downloadStatus = (int)((bytesDownloaded/fileSize)*100);
+				    currentGui.setTaskProgressBarValue(downloadStatus);
 //                    System.out.println("Downloading " + fileUrl + " to " + dest + " " + downloadStatus + "%");
-		}
+				}
             }
             fis.close();
             bis.close();
+			if(Thread.currentThread().isInterrupted()){//cleanup from interrupt
+				File thisFile = new File(dest);
+				thisFile.delete();
+			}
         }catch (MalformedURLException ex){
-	    currentGui.appendOutputText("\nERROR: URL Invalid");
+		    currentGui.appendOutputText("\nERROR: URL Invalid");
 //            ex.printStackTrace();
             return false;
         }catch (FileNotFoundException ex){
-	    currentGui.appendOutputText("\nERROR: File not found");
+		    currentGui.appendOutputText("\nERROR: File not found");
 //            ex.printStackTrace();
             return false;
         }catch (IOException ex){
@@ -209,7 +213,7 @@ public class NwnUpdater implements Runnable{
      * @param parentFolder
      */
     private void uncompressFile(String fileName, String parentFolder){
-	currentGui.appendOutputText("\nExtracting "+fileName+"...");
+		currentGui.appendOutputText("\nExtracting "+fileName+"...");
         String fileLoc = nwnRootPath + File.separator + parentFolder + File.separator + fileName;
         String baseName = fileLoc;
         String fileExt = NwnFileHandler.getFileExtension(fileLoc);
@@ -222,10 +226,10 @@ public class NwnUpdater implements Runnable{
                 extractFolder.mkdir();
             }
             NwnFileHandler.extractFile(Paths.get(fileLoc), Paths.get(baseName));
-	    currentGui.appendOutputText("done");
+		    currentGui.appendOutputText("done");
             processFilesInDirectory(Paths.get(baseName));
         }else{
-	    currentGui.appendOutputText("\nERROR: compression not supported");
+		    currentGui.appendOutputText("\nERROR: compression not supported");
         }
     }
 
@@ -234,22 +238,22 @@ public class NwnUpdater implements Runnable{
      * @param filesToDownload
      */
     private void downloadFilesFromList(ArrayList<ServerFile> filesToDownload){
-	//todo: don't hardcode progress numbers
-	int overallProgress = 10;
-	int overallInterval = 80;
-	if(filesToDownload.size() > 0){
-	    overallInterval = 80/filesToDownload.size();
-	}
-	boolean downloadSuccess;
+		//todo: don't hardcode progress numbers
+		int overallProgress = 10;
+		int overallInterval = 80;
+		if(filesToDownload.size() > 0){
+		    overallInterval = 80/filesToDownload.size();
+		}
+		boolean downloadSuccess;
         for(ServerFile serverFile:filesToDownload){
-	    downloadSuccess = interruptableDownloadFile(serverFile.getUrl().toString(), 
+		    downloadSuccess = interruptableDownloadFile(serverFile.getUrl().toString(), 
 		    nwnRootPath + File.separator + serverFile.getFolder()
                     + File.separator + serverFile.getName());
             if(!downloadSuccess){
-		    currentGui.appendOutputText("\nError downloading file: "+serverFile.getName());
+			    currentGui.appendOutputText("\nError downloading file: "+serverFile.getName());
             }else{
-		    if(serverFile.getFolder().equals(FolderByExt.COMPRESSED.toString())){
-			uncompressFile(serverFile.getName(), serverFile.getFolder());
+			    if(serverFile.getFolder().equals(FolderByExt.COMPRESSED.toString())){
+				uncompressFile(serverFile.getName(), serverFile.getFolder());
 		    }
 	    }
 	    overallProgress = overallProgress + overallInterval;
@@ -262,29 +266,36 @@ public class NwnUpdater implements Runnable{
      * @return
      */
     private ArrayList<ServerFile> determineFilesToDownload(){
-	currentGui.setTaskProgressBarValue(0);
-	int currentProgress = 0;
-	int progressIncrement;
-	if(affectedFolders.size() > 0){
-		progressIncrement = 100/affectedFolders.size();
-	}else{
-		progressIncrement = 100;
-	}
-	currentGui.appendOutputText("\nChecking local files");
+		currentGui.setTaskProgressBarValue(0);
+		int currentProgress = 0;
+		int progressIncrement;
+		if(affectedFolders.size() > 0){
+			progressIncrement = 100/affectedFolders.size();
+		}else{
+			progressIncrement = 100;
+		}
+		currentGui.appendOutputText("\nChecking local files");
         ArrayList<ServerFile> filesToDownload = new ArrayList<ServerFile>();
         for(String folder:affectedFolders){
             Path folderPath = Paths.get(nwnRootPath.toString() + File.separator + folder);
             ArrayList<String> localFiles = NwnFileHandler.getFilesNamesInDirectory(folderPath);
             for(ServerFile serverFile:serverFileList){
-		currentGui.appendOutputText(".");
-                if(serverFile.getFolder().equals(folder) && !localFiles.contains(serverFile.getName())){
+				currentGui.appendOutputText(".");
+                if(serverFile.getFileList() == null && serverFile.getFolder().equals(folder) && !localFiles.contains(serverFile.getName())){
                     filesToDownload.add(serverFile);
-                }
+                }else if(serverFile.getFileList() != null){
+					for(String file:serverFile.getFileList()){
+						if(!localFiles.contains(file) && NwnFileHandler.getFileExtension(file).equalsIgnoreCase(folder)){
+							filesToDownload.add(serverFile);
+							break;
+						}
+					}
+				}
             }
-	    currentProgress = currentProgress + progressIncrement;
-	    currentGui.setTaskProgressBarValue(currentProgress);
+		    currentProgress = currentProgress + progressIncrement;
+		    currentGui.setTaskProgressBarValue(currentProgress);
         }
-	currentGui.appendOutputText("done");
+		currentGui.appendOutputText("done");
         return filesToDownload;
     }
 
@@ -292,51 +303,68 @@ public class NwnUpdater implements Runnable{
      *
      */
     private boolean parseServerFileJson(){
-	currentGui.setTaskProgressBarValue(0);
-	int currentProgress = 0;
-	int statusIncrement;
-	currentGui.appendOutputText("\n\nReading file list");
+		String compressedFileName;
+		currentGui.setTaskProgressBarValue(0);
+		int currentProgress = 0;
+		int statusIncrement;
+		currentGui.appendOutputText("\n\nReading file list");
         try{
-            FileReader reader = new FileReader(serverFileJson.toString());
-            JSONParser jsonParser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
-            Set<String> folders = jsonObject.keySet();
-	    if(folders.size() > 0){
-		statusIncrement = 100/folders.size();
-	    }else{
-		statusIncrement = 100;
-	    }
-	    for(String folderName:folders){
+			Thread.sleep(1000);
+            FileReader  reader     = new FileReader(serverFileJson.toString());
+            JSONParser  jsonParser = new JSONParser();
+            JSONObject  jsonObject = (JSONObject) jsonParser.parse(reader);
+            Set<String> folders    = jsonObject.keySet();
+		    if(folders.size() > 0){
+				statusIncrement = 100/folders.size();
+		    }else{
+				statusIncrement = 100;
+		    }
+		    for(String folderName:folders){
                 if(!folderName.contains("..") && !folderName.contains(":")) {
                     affectedFolders.add(folderName);
                     JSONArray filesByFolder = (JSONArray) jsonObject.get(folderName);
-                    Iterator fileItr = filesByFolder.iterator();
-                    while (fileItr.hasNext()) {
-			currentGui.appendOutputText(".");
+                    Iterator  fileItr       = filesByFolder.iterator();
+					while (fileItr.hasNext()) {
+						currentGui.appendOutputText(".");
                         JSONObject fileJson = (JSONObject) fileItr.next();
-                        URL fileUrl = new URL(fileJson.get("url").toString());
-                        serverFileList.add(new ServerFile(fileJson.get("name").toString(), fileUrl, folderName));
-                    }
+                        URL fileUrl         = new URL(fileJson.get("url").toString());
+						if(folderName.equalsIgnoreCase(FolderByExt.COMPRESSED.toString())){
+							ArrayList<String> compressedFileList  = new ArrayList<>();
+							JSONArray         compressedFileArray = (JSONArray) fileJson.get("files");
+							Iterator          cfItr               = compressedFileArray.iterator();						
+							while(cfItr.hasNext()){
+								compressedFileName = cfItr.next().toString();
+								affectedFolders.add(NwnFileHandler.getFileExtension(compressedFileName));
+								compressedFileList.add(compressedFileName);
+							}
+							serverFileList.add(new ServerFile(fileJson.get("name").toString(), fileUrl, folderName,compressedFileList));
+						}else{
+							serverFileList.add(new ServerFile(fileJson.get("name").toString(), fileUrl, folderName));
+						}
+					}
                 }else{
-		    currentGui.appendOutputText("An unusual folder path was detected: " + folderName +
+				    currentGui.appendOutputText("An unusual folder path was detected: " + folderName +
                             "\nServer owner may be attempting to place files outside of NWN." +
                             "\nThis folder has been excluded from the update.");
                 }
-		currentProgress = currentProgress + statusIncrement;
-		currentGui.setTaskProgressBarValue(currentProgress);
+				currentProgress = currentProgress + statusIncrement;
+				currentGui.setTaskProgressBarValue(currentProgress);
             }
-	currentGui.appendOutputText("done");
-	    reader.close();
+			currentGui.appendOutputText("done");
+		    reader.close();
         }catch (IOException ex){
 //            ex.printStackTrace();
-	    currentGui.appendOutputText("\nERROR: Cannot read server file list.");
-	    return false;
+		    currentGui.appendOutputText("Failed\nERROR: Cannot read server file list.");
+		    return false;
         }catch (ParseException ex){
 //            ex.printStackTrace();
-	    currentGui.appendOutputText("\nERROR: Cannot parse server file list.");
-	    return false;
-        }
-	return true;
+		    currentGui.appendOutputText("Failed\nERROR: Cannot parse server file list.");
+		    return false;
+        }catch (InterruptedException ex){
+		    currentGui.appendOutputText("Canceled");
+			return false;
+		}
+		return true;
     }
 
     public ArrayList<ServerFile> getServerFileList(){

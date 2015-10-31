@@ -196,95 +196,109 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
         }// </editor-fold>//GEN-END:initComponents
 
         private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
-		config.setNwnDir(txtNwnDir.getText());
-		config.save();
-		System.exit(0);
+			btnClose.setEnabled(false);
+			config.setNwnDir(txtNwnDir.getText());
+			config.save();
+			if(updaterThread == null){
+				System.exit(0);
+			}else if(updaterThread.isAlive()){
+				updaterThread.interrupt();
+				try{
+					updaterThread.join();//wait for thread to close
+				}catch(InterruptedException ex){
+					appendOutputText("\nERROR: Cannot close updater. Please try again later.");
+					btnClose.setEnabled(true);
+				}
+				System.exit(0);
+			}else{
+				System.exit(0);
+			}
         }//GEN-LAST:event_btnCloseActionPerformed
 
         private void btnSelectNwnDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectNwnDirActionPerformed
-                JFileChooser fc = new JFileChooser();
-		fc.setCurrentDirectory(new java.io.File("."));
-		fc.setDialogTitle("NWN Updater");
-		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		fc.setAcceptAllFileFilterUsed(false);
-		int returnVal = fc.showOpenDialog(txtNwnDir);
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-		    File file = fc.getSelectedFile();
-		    txtNwnDir.setText(file.getAbsolutePath());
-		}
+			JFileChooser fc = new JFileChooser();
+			fc.setCurrentDirectory(new java.io.File("."));
+			fc.setDialogTitle("NWN Updater");
+			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+			fc.setAcceptAllFileFilterUsed(false);
+			int returnVal = fc.showOpenDialog(txtNwnDir);
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
+				File file = fc.getSelectedFile();
+				txtNwnDir.setText(file.getAbsolutePath());
+			}
         }//GEN-LAST:event_btnSelectNwnDirActionPerformed
 
         private void btnAddServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddServerActionPerformed
-		//Regex validation is here to make sure we can read the config later. If someone complains we can fix this here
-		String newServerName, newServerFileUrl = null;
-		String [] schemes               = {"http","https"};
-		UrlValidator urlValidator       = new UrlValidator(schemes);
-		String nameMessage              = "Server Name:\n";
-		String urlMessage               = "Server File URL:\n";
-		String serverNamePatternString  = "([a-zA-Z0-9_\\./\\-\\:]+)";
-		String serverUrlPatternString   = "([a-zA-Z0-9\\-_\\./\\:]+)"; 
-		Pattern serverNamePattern       = Pattern.compile(serverNamePatternString);
-		Pattern serverUrlPattern        = Pattern.compile(serverUrlPatternString);
-		do{
-			newServerName = (String)JOptionPane.showInputDialog(
-							    null,
-							    nameMessage,
-							    "Add Server",
-							    JOptionPane.PLAIN_MESSAGE);
-			if(newServerName == null){
-				break;
-			}
-			Matcher m = serverNamePattern.matcher(newServerName);
-			if(m.find()){
-				if(!m.group(0).equals(newServerName)){
+			//Regex validation is here to make sure we can read the config later. If someone complains we can fix this here
+			String newServerName, newServerFileUrl = null;
+			String [] schemes               = {"http","https"};
+			UrlValidator urlValidator       = new UrlValidator(schemes);
+			String nameMessage              = "Server Name:\n";
+			String urlMessage               = "Server File URL:\n";
+			String serverNamePatternString  = "([a-zA-Z0-9_\\./\\-\\:]+)";
+			String serverUrlPatternString   = "([a-zA-Z0-9\\-_\\./\\:]+)"; 
+			Pattern serverNamePattern       = Pattern.compile(serverNamePatternString);
+			Pattern serverUrlPattern        = Pattern.compile(serverUrlPatternString);
+			do{
+				newServerName = (String)JOptionPane.showInputDialog(
+									null,
+									nameMessage,
+									"Add Server",
+									JOptionPane.PLAIN_MESSAGE);
+				if(newServerName == null){
+					break;
+				}
+				Matcher m = serverNamePattern.matcher(newServerName);
+				if(m.find()){
+					if(!m.group(0).equals(newServerName)){
+						nameMessage   = "Please Enter a Valid Name:\n";
+						newServerName = "";
+					}
+				}else{
 					nameMessage   = "Please Enter a Valid Name:\n";
 					newServerName = "";
 				}
-			}else{
-				nameMessage   = "Please Enter a Valid Name:\n";
-				newServerName = "";
-			}
-		}while((newServerName.length() == 0)); 
-		do{
-			if(newServerName == null){
-				break;
-			}
-			newServerFileUrl = (String)JOptionPane.showInputDialog(
-							    null,
-							    urlMessage,
-							    "Add Server",
-							    JOptionPane.PLAIN_MESSAGE);
-			if(newServerFileUrl == null){
-				break;
-			}
-			Matcher m = serverUrlPattern.matcher(newServerFileUrl);
-			if(m.find()){
-				if(!urlValidator.isValid(newServerFileUrl) || !m.group(0).equals(newServerFileUrl)){
+			}while((newServerName.length() == 0)); 
+			do{
+				if(newServerName == null){
+					break;
+				}
+				newServerFileUrl = (String)JOptionPane.showInputDialog(
+									null,
+									urlMessage,
+									"Add Server",
+									JOptionPane.PLAIN_MESSAGE);
+				if(newServerFileUrl == null){
+					break;
+				}
+				Matcher m = serverUrlPattern.matcher(newServerFileUrl);
+				if(m.find()){
+					if(!urlValidator.isValid(newServerFileUrl) || !m.group(0).equals(newServerFileUrl)){
+						urlMessage       = "Please Enter Valid Url:\n";
+						newServerFileUrl = "";
+					}
+				}else{
 					urlMessage       = "Please Enter Valid Url:\n";
 					newServerFileUrl = "";
 				}
-			}else{
-				urlMessage       = "Please Enter Valid Url:\n";
-				newServerFileUrl = "";
+			}while((newServerFileUrl.length() == 0));
+			if(newServerName != null && newServerFileUrl != null){
+				try{
+					ServerInfo newServer = new ServerInfo(newServerName, new URL(newServerFileUrl));
+					config.getServerList().add(newServer);
+					cmbServerList.addItem(newServer);
+					nwnUpdaterConfig.getInstance().save();
+				}catch(Exception ex){
+	//				ex.printStackTrace();
+					appendOutputText("\nERROR: Unknown error occured, cannot add server: " + newServerName);
+				}
 			}
-		}while((newServerFileUrl.length() == 0));
-		if(newServerName != null && newServerFileUrl != null){
-			try{
-				ServerInfo newServer = new ServerInfo(newServerName, new URL(newServerFileUrl));
-				config.getServerList().add(newServer);
-				cmbServerList.addItem(newServer);
-				nwnUpdaterConfig.getInstance().save();
-			}catch(Exception ex){
-//				ex.printStackTrace();
-				appendOutputText("\nERROR: Unknown error occured, cannot add server: " + newServerName);
-			}
-		}
         }//GEN-LAST:event_btnAddServerActionPerformed
 
         private void btnRemoveServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveServerActionPerformed
-                config.getServerList().remove(cmbServerList.getSelectedItem());
-		cmbServerList.removeItemAt(cmbServerList.getSelectedIndex());
-		config.save();
+			config.getServerList().remove(cmbServerList.getSelectedItem());
+			cmbServerList.removeItemAt(cmbServerList.getSelectedIndex());
+			config.save();
         }//GEN-LAST:event_btnRemoveServerActionPerformed
 
         private void btnStartUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartUpdateActionPerformed
