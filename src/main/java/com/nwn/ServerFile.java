@@ -47,35 +47,63 @@ public class ServerFile {
 			return "Name: " + getName() + "\nFolder: " + getFolder() + "\nUrl: " + getUrl() + fileList.toString();
 		}
     }
-
+	
+	/**
+	 * Variable used for archives to track files inside archive
+	 * @return list of files reported to be inside archive
+	 */
     public ArrayList<String> getFileList(){
 	    return fileList;
     }
-    
+   
+	/**
+	 * md5 currently not stored
+	 * @return 
+	 */
     public String getMd5(){
         return md5;
     }
 
+	/**
+	 * @return URL of file
+	 */
     public URL getUrl(){
         return url;
     }
 
+	/**
+	 * @return filename 
+	 */
     public String getName(){
         return name;
     }
 
+	/**
+	 * @return file destination folder 
+	 */
     public String getFolder(){
         return folder;
     }
 
+	/**
+	 * Used for adding file names to archived file list
+	 * @param fileName filename to add to list
+	 */
     public void addFileToList(String fileName){
         fileList.add(fileName);
     }
 
+	/**
+	 * Used for removing file names from archived file list
+	 * @param fileName filename to remove from list
+	 */
     public void removeFileFromList(String fileName){
         fileList.remove(fileName);
     }
 
+	/**
+	 * set fileList to null
+	 */
 	public void deleteFileList(){
 		for(String file:fileList){
 			fileList.remove(file);
@@ -83,18 +111,31 @@ public class ServerFile {
 		fileList = null;
 	}
 
+	/**
+	 * currently not used
+	 * @param newMd5 
+	 */
     public void setMd5(String newMd5){
         md5 = newMd5;
     }
 
+	/**
+	 * @param newName new filename
+	 */
     public void setName(String newName){
         name = newName;
     }
 
+	/**
+	 * @param newFolder new destination folder name
+	 */
     public void setFolder(String newFolder){
         folder = newFolder;
     }
 
+	/**
+	 * @param newUrl new file url
+	 */
     public void setUrl(URL newUrl){
         url = newUrl;
     }

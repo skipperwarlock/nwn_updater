@@ -74,6 +74,10 @@ public class nwnUpdaterConfig {
 		this.serverList = new ArrayList<>(serverList);
 	}
 
+	/**
+	 * stub out properties in new config file
+	 * @param cfg name of config file
+	 */
 	private void generateConfig(String cfg){
 		OutputStream output = null;
 		try{
@@ -95,6 +99,11 @@ public class nwnUpdaterConfig {
 		}
 	}
 
+	/**
+	 * load provided config file to this object
+	 * If it does not exist, generate a basic config file with provided name
+	 * @param cfg name of config file
+	 */
 	public void load(String cfg){
 		nwnDir       = null;
 		serverList   = new ArrayList<>();
@@ -123,7 +132,10 @@ public class nwnUpdaterConfig {
 			}
 		}
 	}
-	
+
+	/**
+	 * write changes to current config file
+	 */
 	public void save(){
 		String serverListPropertyString = "";
 		for(ServerInfo serverInfo:serverList){
@@ -149,6 +161,11 @@ public class nwnUpdaterConfig {
 		}
 	}
 	
+	/**
+	 * write a new config file with current properties
+	 * current config stays active on this object
+	 * @param cfg name of new config file 
+	 */
 	public void saveAs(String cfg){
 		String serverListPropertyString = "";
 		for(ServerInfo serverInfo:serverList){
@@ -174,6 +191,10 @@ public class nwnUpdaterConfig {
 		}
 	}
 	
+	/**
+	 * parse the serverList property of the config file for server name and url
+	 * @param serverListProperty 
+	 */
 	private void parseServerList(String serverListProperty){
 		String serverName;
 		String txtServerUrl;
