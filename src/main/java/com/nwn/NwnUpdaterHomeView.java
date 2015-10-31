@@ -90,6 +90,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
                 txtOutput.setLineWrap(true);
                 txtOutput.setRows(5);
                 txtOutput.setText("NWN Server Updater \nversion: 4.00\nBy: Skipper Warlock");
+                txtOutput.setWrapStyleWord(true);
                 txtOutput.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
                 jScrollPane2.setViewportView(txtOutput);
 

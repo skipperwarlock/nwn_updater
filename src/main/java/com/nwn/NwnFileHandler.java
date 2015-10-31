@@ -1,5 +1,9 @@
 package com.nwn;
 
+import com.github.junrar.Archive;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.impl.FileVolumeManager;
+import com.github.junrar.rarfile.FileHeader;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -94,18 +98,56 @@ public class NwnFileHandler {
      * @return True if extract success, False if extract failed
      */
     public static boolean extractFile(Path file, Path dest){
-        try{
-            ZipFile zipFile = new ZipFile(file.toString());
-            if(zipFile.isEncrypted()){
-                System.out.println("Cannot extract from " + file.getFileName().toString() +": Password required.");
+	if(getFileExtension(file.toString()).equals("zip")){
+            try{
+                ZipFile zipFile = new ZipFile(file.toString());
+                if(zipFile.isEncrypted()){
+                    System.out.println("Cannot extract from " + file.getFileName().toString() +": Password required.");
+                    return false;
+                }else{
+                    zipFile.extractAll(dest.toString());
+                }
+            }catch (ZipException ex){
+                ex.printStackTrace();
                 return false;
-            }else{
-                zipFile.extractAll(dest.toString());
             }
-        }catch (ZipException ex){
-            ex.printStackTrace();
-            return false;
-        }
+	}if(getFileExtension(file.toString()).equals("rar")){//todo: finish
+		Archive a = null;
+		try {
+			a = new Archive(new FileVolumeManager(file.toFile()));
+		} catch (RarException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (a != null) {
+			a.getMainHeader().print();
+			FileHeader fh = a.nextFileHeader();
+			while (fh != null) {
+				try {
+					File out = new File(dest.toString()
+							+ File.separator
+							+ fh.getFileNameString().trim());
+					System.out.println(out.getAbsolutePath());
+					FileOutputStream os = new FileOutputStream(out);
+					a.extractFile(fh, os);
+					os.close();
+				} catch (FileNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (RarException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				fh = a.nextFileHeader();
+			}
+		}
+	}
         return true;
     }
 

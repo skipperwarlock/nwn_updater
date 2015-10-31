@@ -86,7 +86,6 @@ public class NwnUpdater implements Runnable{
 		    case 3: exitStatus  = "All Files up to date"; break;
 		    default: exitStatus = "Update failed for unknonw reason"; break;
 	    }
-//	    System.out.println(exitStatus);
 	    currentGui.appendOutputText("\n"+exitStatus);
     }
     
@@ -103,10 +102,8 @@ public class NwnUpdater implements Runnable{
      * @param file directory or file to delete
      */
     private void deleteDirWithMessage(File file){
-//        System.out.print("Cleaning up temporary files...");
 	currentGui.appendOutputText("\nCleaning up temporary files...");
         NwnFileHandler.deleteDir(file);
-//        System.out.println("done");
 	currentGui.appendOutputText("done");
     }
 
@@ -195,11 +192,11 @@ public class NwnUpdater implements Runnable{
                 Path desiredPath = Paths.get(nwnRootPath.toString() + File.separator + folderName + File.separator + fileName);
                 if (!desiredPath.toFile().exists() && desiredFolder.toFile().exists()) {
                     NwnFileHandler.moveFile(srcFile, desiredPath);
+		    currentGui.appendOutputText("\nMoving " + srcFile.getFileName().toString() + " to " + desiredFolder.toString());
                     if (folderName.equals(FolderByExt.COMPRESSED.toString())) {
                         uncompressFile(fileName, folderName);
                     }
                 }else if(!desiredFolder.toFile().exists()){
-//                    System.out.println("ERROR: Folder " + folderName + " does not exist!");
 		    currentGui.appendOutputText("\nERROR: Folder "+folderName+" does not exist!");
                 }
             }
@@ -212,7 +209,6 @@ public class NwnUpdater implements Runnable{
      * @param parentFolder
      */
     private void uncompressFile(String fileName, String parentFolder){
-//        System.out.print("Extracting " + fileName + "...");
 	currentGui.appendOutputText("\nExtracting "+fileName+"...");
         String fileLoc = nwnRootPath + File.separator + parentFolder + File.separator + fileName;
         String baseName = fileLoc;
@@ -220,17 +216,15 @@ public class NwnUpdater implements Runnable{
         if(fileExt.length() > 0){
             baseName = fileLoc.substring(0,fileLoc.lastIndexOf('.'));
         }
-        if(fileExt.equals("zip")) {
+        if(fileExt.equals("zip") || fileExt.equals("rar")) {
             File extractFolder = new File(baseName);
             if (!extractFolder.exists()) {
                 extractFolder.mkdir();
             }
             NwnFileHandler.extractFile(Paths.get(fileLoc), Paths.get(baseName));
-//            System.out.print("done\n");
 	    currentGui.appendOutputText("done");
             processFilesInDirectory(Paths.get(baseName));
         }else{
-//            System.out.print("ERROR: compression not supported\n");
 	    currentGui.appendOutputText("\nERROR: compression not supported");
         }
     }
@@ -252,7 +246,6 @@ public class NwnUpdater implements Runnable{
 		    nwnRootPath + File.separator + serverFile.getFolder()
                     + File.separator + serverFile.getName());
             if(!downloadSuccess){
-//                System.out.println("Error downloading file: " + serverFile.getName());
 		    currentGui.appendOutputText("\nError downloading file: "+serverFile.getName());
             }else{
 		    if(serverFile.getFolder().equals(FolderByExt.COMPRESSED.toString())){
@@ -277,14 +270,12 @@ public class NwnUpdater implements Runnable{
 	}else{
 		progressIncrement = 100;
 	}
-//        System.out.print("Checking local files");
 	currentGui.appendOutputText("\nChecking local files");
         ArrayList<ServerFile> filesToDownload = new ArrayList<ServerFile>();
         for(String folder:affectedFolders){
             Path folderPath = Paths.get(nwnRootPath.toString() + File.separator + folder);
             ArrayList<String> localFiles = NwnFileHandler.getFilesNamesInDirectory(folderPath);
             for(ServerFile serverFile:serverFileList){
-//                System.out.print(".");
 		currentGui.appendOutputText(".");
                 if(serverFile.getFolder().equals(folder) && !localFiles.contains(serverFile.getName())){
                     filesToDownload.add(serverFile);
@@ -293,7 +284,6 @@ public class NwnUpdater implements Runnable{
 	    currentProgress = currentProgress + progressIncrement;
 	    currentGui.setTaskProgressBarValue(currentProgress);
         }
-//        System.out.println();
 	currentGui.appendOutputText("done");
         return filesToDownload;
     }
@@ -305,7 +295,6 @@ public class NwnUpdater implements Runnable{
 	currentGui.setTaskProgressBarValue(0);
 	int currentProgress = 0;
 	int statusIncrement;
-//        System.out.print("Reading file list");
 	currentGui.appendOutputText("\n\nReading file list");
         try{
             FileReader reader = new FileReader(serverFileJson.toString());
@@ -323,17 +312,12 @@ public class NwnUpdater implements Runnable{
                     JSONArray filesByFolder = (JSONArray) jsonObject.get(folderName);
                     Iterator fileItr = filesByFolder.iterator();
                     while (fileItr.hasNext()) {
-//                        System.out.print(".");
 			currentGui.appendOutputText(".");
                         JSONObject fileJson = (JSONObject) fileItr.next();
                         URL fileUrl = new URL(fileJson.get("url").toString());
                         serverFileList.add(new ServerFile(fileJson.get("name").toString(), fileUrl, folderName));
                     }
                 }else{
-//                    System.out.println("An unusual folder path was detected: " + folderName +
-//                            "\nServer owner may be attempting to place files outside of NWN." +
-//                            "\nThis folder has been excluded from the update."
-//                    );
 		    currentGui.appendOutputText("An unusual folder path was detected: " + folderName +
                             "\nServer owner may be attempting to place files outside of NWN." +
                             "\nThis folder has been excluded from the update.");
