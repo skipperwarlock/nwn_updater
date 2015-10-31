@@ -9,9 +9,12 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.text.DefaultCaret;
+import org.apache.commons.validator.routines.UrlValidator;
 
 /**
  *
@@ -208,33 +211,61 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
         }//GEN-LAST:event_btnSelectNwnDirActionPerformed
 
         private void btnAddServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddServerActionPerformed
+		//Regex validation is here to make sure we can read the config later. If someone complains we can fix this here
 		String newServerName, newServerFileUrl = null;
+		String [] schemes               = {"http","https"};
+		UrlValidator urlValidator       = new UrlValidator(schemes);
+		String nameMessage              = "Server Name:\n";
+		String urlMessage               = "Server File URL:\n";
+		String serverNamePatternString  = "([a-zA-Z0-9_\\./\\-\\:]+)";
+		String serverUrlPatternString   = "([a-zA-Z0-9\\-_\\./\\:]+)"; 
+		Pattern serverNamePattern       = Pattern.compile(serverNamePatternString);
+		Pattern serverUrlPattern        = Pattern.compile(serverUrlPatternString);
 		do{
 			newServerName = (String)JOptionPane.showInputDialog(
 							    null,
-							    "Server Name:\n",
+							    nameMessage,
 							    "Add Server",
 							    JOptionPane.PLAIN_MESSAGE);
 			if(newServerName == null){
 				break;
 			}
-		}while((newServerName.length() == 0)); //todo use regex pattern to validate
+			Matcher m = serverNamePattern.matcher(newServerName);
+			if(m.find()){
+				if(!m.group(0).equals(newServerName)){
+					nameMessage   = "Please Enter a Valid Name:\n";
+					newServerName = "";
+				}
+			}else{
+				nameMessage   = "Please Enter a Valid Name:\n";
+				newServerName = "";
+			}
+		}while((newServerName.length() == 0)); 
 		do{
 			if(newServerName == null){
 				break;
 			}
 			newServerFileUrl = (String)JOptionPane.showInputDialog(
 							    null,
-							    "Server File URL:\n",
+							    urlMessage,
 							    "Add Server",
 							    JOptionPane.PLAIN_MESSAGE);
 			if(newServerFileUrl == null){
 				break;
 			}
-		}while((newServerFileUrl.length() == 0)); //todo use regex pattern to validate
+			Matcher m = serverUrlPattern.matcher(newServerFileUrl);
+			if(m.find()){
+				if(!urlValidator.isValid(newServerFileUrl) || !m.group(0).equals(newServerFileUrl)){
+					urlMessage       = "Please Enter Valid Url:\n";
+					newServerFileUrl = "";
+				}
+			}else{
+				urlMessage       = "Please Enter Valid Url:\n";
+				newServerFileUrl = "";
+			}
+		}while((newServerFileUrl.length() == 0));
 		if(newServerName != null && newServerFileUrl != null){
 			try{
-				//todo: handle bad servername and url
 				ServerInfo newServer = new ServerInfo(newServerName, new URL(newServerFileUrl));
 				config.getServerList().add(newServer);
 				cmbServerList.addItem(newServer);
