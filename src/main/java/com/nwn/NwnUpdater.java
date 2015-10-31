@@ -45,7 +45,10 @@ public class NwnUpdater implements Runnable{
         File tmpFolder = new File(nwnRootPath.toString() + File.separator + FolderByExt.COMPRESSED.toString());
         if(!tmpFolder.exists()){
             tmpFolder.mkdir();
-        }
+        }else{
+	    deleteDirWithMessage(tmpFolder);
+	    tmpFolder.mkdir();
+	}
     }
 
     /**
@@ -85,7 +88,6 @@ public class NwnUpdater implements Runnable{
     }
     
     private void cleanup(){
-	//todo: check what exists before we delete everything
 	currentGui.setTaskProgressBarValue(50);
         deleteDirWithMessage(new File(nwnRootPath + File.separator + FolderByExt.COMPRESSED.toString()));
 	currentGui.setTaskProgressBarValue(100);

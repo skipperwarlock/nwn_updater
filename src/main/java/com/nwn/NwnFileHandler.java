@@ -11,7 +11,7 @@ import net.lingala.zip4j.core.ZipFile;
 
 /**
 ` * Created by Sam on 10/10/2015.
-  * TODO: add test cases, add logging
+  * TODO: add test cases
  */
 public class NwnFileHandler {
 
