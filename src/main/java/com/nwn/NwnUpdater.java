@@ -59,7 +59,7 @@ public class NwnUpdater implements Runnable{
 	currentGui.setUpdateBtnText("Stop");    
 	    
 	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
-        parseServerFileJson();
+        if(!parseServerFileJson()){cleanup();printExitStatus(2);return;}
 	currentGui.setOverallProgressBarValue(5);
 	
 	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
@@ -67,7 +67,9 @@ public class NwnUpdater implements Runnable{
 	currentGui.setOverallProgressBarValue(10);
 	
 	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
-        downloadFilesFromList(filesToDownload);
+	if(filesToDownload.size() > 0){
+	    downloadFilesFromList(filesToDownload);
+	}else{cleanup();printExitStatus(3);return;}
 	currentGui.setOverallProgressBarValue(90);
 	
 	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
@@ -81,6 +83,7 @@ public class NwnUpdater implements Runnable{
 		    case 0: exitStatus  = "Update Process Complete"; break;
 		    case 1: exitStatus  = "Update canceled by user"; break;
 		    case 2: exitStatus  = "Update failed"; break;
+		    case 3: exitStatus  = "All Files up to date"; break;
 		    default: exitStatus = "Update failed for unknonw reason"; break;
 	    }
 //	    System.out.println(exitStatus);
@@ -147,20 +150,25 @@ public class NwnUpdater implements Runnable{
             {
                 bytesDownloaded += count;
                 fis.write(buffer, 0, count);
+		if(fileSize > 0){
                 int downloadStatus = (int)((bytesDownloaded/fileSize)*100);
-		currentGui.setTaskProgressBarValue(downloadStatus);
-//                System.out.println("Downloading " + fileUrl + " to " + dest + " " + downloadStatus + "%");
+		    currentGui.setTaskProgressBarValue(downloadStatus);
+//                    System.out.println("Downloading " + fileUrl + " to " + dest + " " + downloadStatus + "%");
+		}
             }
             fis.close();
             bis.close();
         }catch (MalformedURLException ex){
-            ex.printStackTrace();
+	    currentGui.appendOutputText("\nERROR: URL Invalid");
+//            ex.printStackTrace();
             return false;
         }catch (FileNotFoundException ex){
-            ex.printStackTrace();
+	    currentGui.appendOutputText("\nERROR: File not found");
+//            ex.printStackTrace();
             return false;
         }catch (IOException ex){
-            ex.printStackTrace();
+	    currentGui.appendOutputText("\nERROR: Cannot save file");
+//            ex.printStackTrace();
             return false;
         }
 	if(Thread.currentThread().isInterrupted()){
@@ -234,11 +242,12 @@ public class NwnUpdater implements Runnable{
     private void downloadFilesFromList(ArrayList<ServerFile> filesToDownload){
 	//todo: don't hardcode progress numbers
 	int overallProgress = 10;
-        int overallInterval = 80/filesToDownload.size();
+	int overallInterval = 80;
+	if(filesToDownload.size() > 0){
+	    overallInterval = 80/filesToDownload.size();
+	}
 	boolean downloadSuccess;
         for(ServerFile serverFile:filesToDownload){
-	    overallProgress = overallProgress + overallInterval;
-	    currentGui.setOverallProgressBarValue(overallProgress);
 	    downloadSuccess = interruptableDownloadFile(serverFile.getUrl().toString(), 
 		    nwnRootPath + File.separator + serverFile.getFolder()
                     + File.separator + serverFile.getName());
@@ -250,6 +259,8 @@ public class NwnUpdater implements Runnable{
 			uncompressFile(serverFile.getName(), serverFile.getFolder());
 		    }
 	    }
+	    overallProgress = overallProgress + overallInterval;
+	    currentGui.setOverallProgressBarValue(overallProgress);
         }
     }
 
@@ -260,12 +271,16 @@ public class NwnUpdater implements Runnable{
     private ArrayList<ServerFile> determineFilesToDownload(){
 	currentGui.setTaskProgressBarValue(0);
 	int currentProgress = 0;
-	int progressIncrement = 100/affectedFolders.size();
+	int progressIncrement;
+	if(affectedFolders.size() > 0){
+		progressIncrement = 100/affectedFolders.size();
+	}else{
+		progressIncrement = 100;
+	}
 //        System.out.print("Checking local files");
 	currentGui.appendOutputText("\nChecking local files");
         ArrayList<ServerFile> filesToDownload = new ArrayList<ServerFile>();
         for(String folder:affectedFolders){
-	    currentGui.setTaskProgressBarValue(currentProgress);
             Path folderPath = Paths.get(nwnRootPath.toString() + File.separator + folder);
             ArrayList<String> localFiles = NwnFileHandler.getFilesNamesInDirectory(folderPath);
             for(ServerFile serverFile:serverFileList){
@@ -275,29 +290,34 @@ public class NwnUpdater implements Runnable{
                     filesToDownload.add(serverFile);
                 }
             }
+	    currentProgress = currentProgress + progressIncrement;
+	    currentGui.setTaskProgressBarValue(currentProgress);
         }
 //        System.out.println();
-
+	currentGui.appendOutputText("done");
         return filesToDownload;
     }
 
     /**
      *
      */
-    private void parseServerFileJson(){
+    private boolean parseServerFileJson(){
 	currentGui.setTaskProgressBarValue(0);
 	int currentProgress = 0;
+	int statusIncrement;
 //        System.out.print("Reading file list");
-	currentGui.appendOutputText("\nReading file list");
+	currentGui.appendOutputText("\n\nReading file list");
         try{
             FileReader reader = new FileReader(serverFileJson.toString());
             JSONParser jsonParser = new JSONParser();
             JSONObject jsonObject = (JSONObject) jsonParser.parse(reader);
             Set<String> folders = jsonObject.keySet();
-	    int statusIncrement = 100/folders.size();
-            
+	    if(folders.size() > 0){
+		statusIncrement = 100/folders.size();
+	    }else{
+		statusIncrement = 100;
+	    }
 	    for(String folderName:folders){
-		currentGui.setTaskProgressBarValue(currentProgress);
                 if(!folderName.contains("..") && !folderName.contains(":")) {
                     affectedFolders.add(folderName);
                     JSONArray filesByFolder = (JSONArray) jsonObject.get(folderName);
@@ -318,14 +338,21 @@ public class NwnUpdater implements Runnable{
                             "\nServer owner may be attempting to place files outside of NWN." +
                             "\nThis folder has been excluded from the update.");
                 }
+		currentProgress = currentProgress + statusIncrement;
+		currentGui.setTaskProgressBarValue(currentProgress);
             }
-//            System.out.println();
+	currentGui.appendOutputText("done");
 	    reader.close();
         }catch (IOException ex){
-            ex.printStackTrace();
+//            ex.printStackTrace();
+	    currentGui.appendOutputText("\nERROR: Cannot read server file list.");
+	    return false;
         }catch (ParseException ex){
-            ex.printStackTrace();
+//            ex.printStackTrace();
+	    currentGui.appendOutputText("\nERROR: Cannot parse server file list.");
+	    return false;
         }
+	return true;
     }
 
     public ArrayList<ServerFile> getServerFileList(){

@@ -83,7 +83,10 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
                 });
 
                 txtOutput.setEditable(false);
+                txtOutput.setBackground(new java.awt.Color(0, 0, 0));
                 txtOutput.setColumns(20);
+                txtOutput.setFont(new java.awt.Font("Arial", 0, 12)); // NOI18N
+                txtOutput.setForeground(new java.awt.Color(0, 255, 0));
                 txtOutput.setLineWrap(true);
                 txtOutput.setRows(5);
                 txtOutput.setText("NWN Server Updater \nversion: 4.00\nBy: Skipper Warlock");
@@ -271,7 +274,8 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 				cmbServerList.addItem(newServer);
 				nwnUpdaterConfig.getInstance().save();
 			}catch(Exception ex){
-				ex.printStackTrace();
+//				ex.printStackTrace();
+				appendOutputText("\nERROR: Unknown error occured, cannot add server: " + newServerName);
 			}
 		}
         }//GEN-LAST:event_btnAddServerActionPerformed
@@ -291,7 +295,8 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 			try{
 				updaterThread.join();//wait for thread to close
 			}catch(InterruptedException ex){
-				ex.printStackTrace();
+//				ex.printStackTrace();
+				appendOutputText("\nERROR: Cannot close updater. Please restart the application.");
 			}
 			btnStartUpdate.setEnabled(true);
 		}else{
