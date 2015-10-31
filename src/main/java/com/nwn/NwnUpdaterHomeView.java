@@ -17,7 +17,7 @@ import javax.swing.JOptionPane;
  *
  * @author Sam
  */
-public class NwnUpdaterHomeView extends javax.swing.JFrame {
+public class NwnUpdaterHomeView extends javax.swing.JFrame{
 	private nwnUpdaterConfig config = nwnUpdaterConfig.getInstance();
 	private Thread updaterThread;
 
@@ -240,26 +240,37 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame {
         }//GEN-LAST:event_btnRemoveServerActionPerformed
 
         private void btnStartUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartUpdateActionPerformed
-		if(!updaterThread.isAlive()){
+		if(updaterThread == null){
+			startUpdateThread();
+		}else if(updaterThread.isAlive()){
+			updaterThread.interrupt();
+			try{
+				updaterThread.join();//wait for thread to close
+			}catch(InterruptedException ex){
+				ex.printStackTrace();
+			}
+			btnStartUpdate.setText("Update");
+		}else{
+			startUpdateThread();
+		}
+        }//GEN-LAST:event_btnStartUpdateActionPerformed
+
+	private void startUpdateThread(){
 			btnStartUpdate.setText("Stop");
 			ServerInfo selectedServer = (ServerInfo)cmbServerList.getSelectedItem();
 			config.setNwnDir(txtNwnDir.getText());
 			config.save();
-			File tmpDir = new File(config.getNwnDir().toString() + File.separator + "tmp");
-			if(!tmpDir.exists()){
-				tmpDir.mkdir();
+			File serverFileDir = new File(config.getNwnDir().toString() + File.separator + "ServerFiles");
+			if(!serverFileDir.exists()){
+				serverFileDir.mkdir();
 			}
-			NwnFileHandler.downloadFile(selectedServer.getFileUrl().toString(), tmpDir.toString() + File.separator + selectedServer.getServerName() + ".json");
-			Path serverJson = Paths.get(tmpDir.toString() + File.separator + selectedServer.getServerName() + ".json");
+			NwnFileHandler.downloadFile(selectedServer.getFileUrl().toString(), serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
+			Path serverJson = Paths.get(serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
 			NwnUpdater nwnUpdater = new NwnUpdater(config.getNwnDir(), serverJson);
 			updaterThread = new Thread(nwnUpdater, "Update Thread");
 			updaterThread.start();
-		}else{
-			updaterThread.interrupt();
-			btnStartUpdate.setText("Update");
-		}
-        }//GEN-LAST:event_btnStartUpdateActionPerformed
-
+	}
+	
 	/**
 	 * @param args the command line arguments
 	 */

@@ -1,13 +1,17 @@
 package com.nwn;
 
+import java.io.BufferedInputStream;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -47,11 +51,34 @@ public class NwnUpdater implements Runnable{
      */
     @Override
     public void run() {
+	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
         parseServerFileJson();
+	
+	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
         ArrayList<ServerFile> filesToDownload = determineFilesToDownload();
+	
+	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
         downloadFilesFromList(filesToDownload);
+	
+	if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
+	cleanup();
+	printExitStatus(0);
+    }
+
+    private void printExitStatus(int status){
+	    String exitStatus;
+	    switch(status){
+		    case 0: exitStatus = "Update Process Complete"; break;
+		    case 1: exitStatus = "Update canceled by user"; break;
+		    case 2: exitStatus = "Update failed"; break;
+		    default: exitStatus = "Update failed for unknonw reason"; break;
+	    }
+	    System.out.println(exitStatus);
+    }
+    
+    private void cleanup(){
+	//todo: check what exists before we delete everything
         deleteDirWithMessage(new File(nwnRootPath + File.separator + FolderByExt.COMPRESSED.toString()));
-        System.out.println("Update Process Complete");
     }
 
     /**
@@ -60,23 +87,8 @@ public class NwnUpdater implements Runnable{
      */
     private void deleteDirWithMessage(File file){
         System.out.print("Cleaning up temporary files...");
-        deleteDir(file);
+        NwnFileHandler.deleteDir(file);
         System.out.println("done");
-    }
-
-    /**
-     * Deletes every file in given directory
-     * If a directory is found, it will be recursively deleted
-     * @param file directory or file to delete
-     */
-    private void deleteDir(File file){
-        File[] contents = file.listFiles();
-        if (contents != null) {
-            for (File f : contents) {
-                deleteDir(f);
-            }
-        }
-        file.delete();
     }
 
     /**
@@ -95,6 +107,47 @@ public class NwnUpdater implements Runnable{
         } catch (SecurityException e) {
             return file.getName() + " We're sandboxed and don't have filesystem access.";
         }
+    }
+
+    /**
+     * Downloads file from given url
+     * @param fileUrl String of url to download
+     * @param dest Location on system where file should be downloaded
+     * @return True if download success, False if download failed
+     */
+    public static boolean interruptableDownloadFile(String fileUrl, String dest){
+        try{
+            URL url = new URL(fileUrl);
+            BufferedInputStream bis = new BufferedInputStream(url.openStream());
+            FileOutputStream fis = new FileOutputStream(dest);
+            String fileSizeString = url.openConnection().getHeaderField("Content-Length");
+            double fileSize = Double.parseDouble(fileSizeString);
+            byte[] buffer = new byte[1024];
+            int count;
+            double bytesDownloaded = 0.0;
+            while((count = bis.read(buffer,0,1024)) != -1 && !Thread.currentThread().isInterrupted())
+            {
+                bytesDownloaded += count;
+                fis.write(buffer, 0, count);
+                int downloadStatus = (int)((bytesDownloaded/fileSize)*100);
+                System.out.println("Downloading " + fileUrl + " to " + dest + " " + downloadStatus + "%");
+            }
+            fis.close();
+            bis.close();
+        }catch (MalformedURLException ex){
+            ex.printStackTrace();
+            return false;
+        }catch (FileNotFoundException ex){
+            ex.printStackTrace();
+            return false;
+        }catch (IOException ex){
+            ex.printStackTrace();
+            return false;
+        }
+	if(Thread.currentThread().isInterrupted()){
+		return false;
+	}
+        return true;
     }
 
     /**
@@ -155,14 +208,18 @@ public class NwnUpdater implements Runnable{
      * @param filesToDownload
      */
     private void downloadFilesFromList(ArrayList<ServerFile> filesToDownload){
+	boolean downloadSuccess;
         for(ServerFile serverFile:filesToDownload){
-            if(!NwnFileHandler.downloadFile(serverFile.getUrl().toString(), nwnRootPath + File.separator + serverFile.getFolder()
-                    + File.separator + serverFile.getName())){
+	    downloadSuccess = interruptableDownloadFile(serverFile.getUrl().toString(), 
+		    nwnRootPath + File.separator + serverFile.getFolder()
+                    + File.separator + serverFile.getName());
+            if(!downloadSuccess){
                 System.out.println("Error downloading file: " + serverFile.getName());
-            }
-            if(serverFile.getFolder().equals(FolderByExt.COMPRESSED.toString())){
-                uncompressFile(serverFile.getName(), serverFile.getFolder());
-            }
+            }else{
+		    if(serverFile.getFolder().equals(FolderByExt.COMPRESSED.toString())){
+			uncompressFile(serverFile.getName(), serverFile.getFolder());
+		    }
+	    }
         }
     }
 
@@ -218,7 +275,7 @@ public class NwnUpdater implements Runnable{
                 }
             }
             System.out.println();
-
+	    reader.close();
         }catch (IOException ex){
             ex.printStackTrace();
         }catch (ParseException ex){

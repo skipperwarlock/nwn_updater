@@ -136,7 +136,6 @@ public class NwnFileHandler {
             }
             fis.close();
             bis.close();
-
         }catch (MalformedURLException ex){
             ex.printStackTrace();
             return false;
@@ -149,6 +148,21 @@ public class NwnFileHandler {
         }
 
         return true;
+    }
+    
+    /**
+     * Deletes every file in given directory
+     * If a directory is found, it will be recursively deleted
+     * @param file directory or file to delete
+     */
+    public static void deleteDir(File file){
+        File[] contents = file.listFiles();
+        if (contents != null) {
+            for (File f : contents) {
+                deleteDir(f);
+            }
+        }
+        file.delete();
     }
 
     /**
