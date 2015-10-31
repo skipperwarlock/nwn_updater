@@ -1,0 +1,19 @@
+{
+  "ambient":[
+    {"name":"wavTest.wav", "md5":"", "url":"https://dl.dropboxusercontent.com/u/1827199/wavTest.wav"},
+  ],
+  "music":[
+    {"name":"bmuTest.bmu", "md5":"", "url":"https://dl.dropboxusercontent.com/u/1827199/bmuTest.bmu"}
+  ],
+  "hak":[
+    {"name":"hakTest.hak", "md5":"", "url":"https://dl.dropboxusercontent.com/u/1827199/hakTest.hak"}
+  ],
+  "compressed_tmp":[
+    {"name":"mzs3_top_v2.rar", "md5":"", "url":"https://dl.dropboxusercontent.com/u/273755/mzs3_top_v2.rar",
+      "files":[
+        "mzs3_top_v2.hak",
+        "msz3_tlk_v2.tlk"
+      ]
+    }
+  ]
+}
