@@ -32,6 +32,9 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 		updateUIComponents();
 	}
 
+	/**
+	 * Initialize gui components with data from config
+	 */
 	private void updateUIComponents(){
 		if(config.getNwnDir() != null){
 			txtNwnDir.setText(config.getNwnDir().toString());
@@ -195,6 +198,10 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
                 pack();
         }// </editor-fold>//GEN-END:initComponents
 
+		/**
+		 * Make sure updater gracefully closes then shutdown app
+		 * @param evt 
+		 */
         private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
 			btnClose.setEnabled(false);
 			config.setNwnDir(txtNwnDir.getText());
@@ -215,6 +222,10 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 			}
         }//GEN-LAST:event_btnCloseActionPerformed
 
+		/**
+		 * Allow user to specify their NWN directory
+		 * @param evt 
+		 */
         private void btnSelectNwnDirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSelectNwnDirActionPerformed
 			JFileChooser fc = new JFileChooser();
 			fc.setCurrentDirectory(new java.io.File("."));
@@ -228,8 +239,16 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 			}
         }//GEN-LAST:event_btnSelectNwnDirActionPerformed
 
+		/**
+		 * Add server and save it to config
+		 * Ensure the server name and url are valid and follow the same pattern 
+		 * that we expect to read from the config
+		 * @param evt 
+		 */
         private void btnAddServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddServerActionPerformed
-			//Regex validation is here to make sure we can read the config later. If someone complains we can fix this here
+			//Regex validation is here to make sure we can read the config later. 
+			//this should be changed both here and on the config object
+			//todo: enum for regex values
 			String newServerName, newServerFileUrl = null;
 			String [] schemes               = {"http","https"};
 			UrlValidator urlValidator       = new UrlValidator(schemes);
@@ -295,64 +314,96 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 			}
         }//GEN-LAST:event_btnAddServerActionPerformed
 
+		/**
+		 * Delete server from gui and config
+		 * Currently this cannot be undone
+		 * @param evt 
+		 */
         private void btnRemoveServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveServerActionPerformed
 			config.getServerList().remove(cmbServerList.getSelectedItem());
 			cmbServerList.removeItemAt(cmbServerList.getSelectedIndex());
 			config.save();
         }//GEN-LAST:event_btnRemoveServerActionPerformed
 
+		/**
+		 * Start our update process
+		 * While the process is running, our update button will act as the stop/cancel button
+		 * @param evt 
+		 */
         private void btnStartUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStartUpdateActionPerformed
-		if(updaterThread == null){
-			startUpdateThread();
-		}else if(updaterThread.isAlive()){
-			updaterThread.interrupt();
-			btnStartUpdate.setEnabled(false);
-			try{
-				updaterThread.join();//wait for thread to close
-			}catch(InterruptedException ex){
-//				ex.printStackTrace();
-				appendOutputText("\nERROR: Cannot close updater. Please restart the application.");
+			if(updaterThread == null){
+				startUpdateThread();
+			}else if(updaterThread.isAlive()){
+				updaterThread.interrupt();
+				btnStartUpdate.setEnabled(false);
+				try{
+					updaterThread.join();//wait for thread to close
+				}catch(InterruptedException ex){
+	//				ex.printStackTrace();
+					appendOutputText("\nERROR: Cannot close updater. Please restart the application.");
+				}
+				btnStartUpdate.setEnabled(true);
+			}else{
+				startUpdateThread();
 			}
-			btnStartUpdate.setEnabled(true);
-		}else{
-			startUpdateThread();
-		}
         }//GEN-LAST:event_btnStartUpdateActionPerformed
-
+	
+	/**
+	 * Set text value for update button
+	 * @param newText new update button text
+	 */
 	public void setUpdateBtnText(String newText){
 		btnStartUpdate.setText(newText);
 	}
 	
+	/**
+	 * Set value for Overall Progress Bar
+	 * @param newValue new Overall Progress Bar value
+	 */
 	public void setOverallProgressBarValue(int newValue){
 		progressBarOverall.setValue(newValue);
 	}
-	
+
+	/**
+	 * Set value for Task Progress Bar
+	 * @param newValue new Task Progress Bar value
+	 */
 	public void setTaskProgressBarValue(int newValue){
 		progressBarTask.setValue(newValue);
 	}
 
+	/**
+	 * Add text to Output Box
+	 * @param newText new text to append
+	 */
 	public void appendOutputText(String newText){
 		txtOutput.append(newText);
 	}
 
-	
+	/**
+	 * Perform actions necessary to start the update process
+	 */	
 	private void startUpdateThread(){
-		progressBarTask.setValue(0);
-		progressBarOverall.setValue(0);
-		btnStartUpdate.setEnabled(false);
-		ServerInfo selectedServer = (ServerInfo)cmbServerList.getSelectedItem();
-		config.setNwnDir(txtNwnDir.getText());
-		config.save();
-		File serverFileDir = new File(config.getNwnDir().toString() + File.separator + "UpdaterServerFiles");
-		if(!serverFileDir.exists()){
-			serverFileDir.mkdir();
+		if(NwnFileHandler.isValidNwnDirectory(txtNwnDir.getText(), "nwmain.exe")){
+			progressBarTask.setValue(0);
+			progressBarOverall.setValue(0);
+			btnStartUpdate.setEnabled(false);
+			ServerInfo selectedServer = (ServerInfo)cmbServerList.getSelectedItem();
+			config.setNwnDir(txtNwnDir.getText());
+			config.save();
+			File serverFileDir = new File(config.getNwnDir().toString() + File.separator + "UpdaterServerFiles");
+			if(!serverFileDir.exists()){
+				serverFileDir.mkdir();
+			}
+			NwnFileHandler.downloadFile(selectedServer.getFileUrl().toString(), serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
+			Path serverJson = Paths.get(serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
+			NwnUpdater nwnUpdater = new NwnUpdater(config.getNwnDir(), serverJson, this);
+			updaterThread = new Thread(nwnUpdater, "Update Thread");
+			updaterThread.start();
+			btnStartUpdate.setEnabled(true);
+		}else{
+			appendOutputText("\nPlease provide a valid NWN Directory");
 		}
-		NwnFileHandler.downloadFile(selectedServer.getFileUrl().toString(), serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
-		Path serverJson = Paths.get(serverFileDir.toString() + File.separator + selectedServer.getServerName() + ".json");
-		NwnUpdater nwnUpdater = new NwnUpdater(config.getNwnDir(), serverJson, this);
-		updaterThread = new Thread(nwnUpdater, "Update Thread");
-		updaterThread.start();
-		btnStartUpdate.setEnabled(true);
 	}
 	
 	/**

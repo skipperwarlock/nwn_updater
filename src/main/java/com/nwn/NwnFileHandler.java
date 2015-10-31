@@ -42,7 +42,7 @@ public class NwnFileHandler {
      * @param dir Path to directory for parsing
      * @return String of file names in directory
      */
-    public static ArrayList<String> getFilesNamesInDirectory(Path dir){
+    public static ArrayList<String> getFileNamesInDirectory(Path dir){
         ArrayList<String> fileNamesInDir = new ArrayList<String>();
         try {
             DirectoryStream<Path> dirStream = Files.newDirectoryStream(dir);
@@ -223,4 +223,17 @@ public class NwnFileHandler {
 
         return extension;
     }
+
+	public static boolean isValidNwnDirectory(String nwnDir, String checkfileName){
+		Path nwnPath = Paths.get(nwnDir);
+		if(nwnPath.toFile().isDirectory()){
+			ArrayList<String> nwnPathFiles = getFileNamesInDirectory(nwnPath);
+			for(String fileName:nwnPathFiles){
+				if(fileName.equalsIgnoreCase(checkfileName)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }

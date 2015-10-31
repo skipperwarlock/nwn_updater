@@ -46,7 +46,7 @@ public class NwnUpdater implements Runnable{
         if(!tmpFolder.exists()){
             tmpFolder.mkdir();
         }else{
-		    deleteDirWithMessage(tmpFolder);
+		    deleteDirWithMessage(tmpFolder, "Removing old files...");
 		    tmpFolder.mkdir();
 		}
     }
@@ -76,7 +76,17 @@ public class NwnUpdater implements Runnable{
 		cleanup();
 		printExitStatus(0);
     }
-
+	/**
+	 * Output why the update process ended
+	 * Available statuses:
+	 * 0 = Complete
+	 * 1 = Canceled
+	 * 2 = Failed
+	 * 3 = No update required
+	 * default = Unknown reason
+	 * @param status exit status integer
+	 * //todo: ENUMS
+	 */
     private void printExitStatus(int status){
 	    String exitStatus;
 	    switch(status){
@@ -88,10 +98,14 @@ public class NwnUpdater implements Runnable{
 	    }
 	    currentGui.appendOutputText("\n"+exitStatus);
     }
-    
+   
+	/**
+	 * Make sure everything is cleaned up
+	 * This currently only wipes the compressed file directory
+	 */
     private void cleanup(){
 		currentGui.setTaskProgressBarValue(50);
-        deleteDirWithMessage(new File(nwnRootPath + File.separator + FolderByExt.COMPRESSED.toString()));
+        deleteDirWithMessage(new File(nwnRootPath + File.separator + FolderByExt.COMPRESSED.toString()),"Cleaning up temporary files...");
 		currentGui.setTaskProgressBarValue(100);
 		currentGui.setOverallProgressBarValue(100);
 		currentGui.setUpdateBtnText("Update");
@@ -100,9 +114,10 @@ public class NwnUpdater implements Runnable{
     /**
      * Notification wrapper for deleteDir
      * @param file directory or file to delete
+	 * @param message message to give user about delete
      */
-    private void deleteDirWithMessage(File file){
-		currentGui.appendOutputText("\nCleaning up temporary files...");
+    private void deleteDirWithMessage(File file, String message){
+		currentGui.appendOutputText("\n"+message);
         NwnFileHandler.deleteDir(file);
 		currentGui.appendOutputText("done");
     }
@@ -127,6 +142,7 @@ public class NwnUpdater implements Runnable{
 
     /**
      * Downloads file from given url
+	 * Gracefully handle thread interrupt
      * @param fileUrl String of url to download
      * @param dest Location on system where file should be downloaded
      * @return True if download success, False if download failed
@@ -172,20 +188,20 @@ public class NwnUpdater implements Runnable{
 //            ex.printStackTrace();
             return false;
         }
-	if(Thread.currentThread().isInterrupted()){
-		return false;
-	}
-	currentGui.appendOutputText("done");
+		if(Thread.currentThread().isInterrupted()){
+			return false;
+		}
+		currentGui.appendOutputText("done");
         return true;
     }
 
     /**
      * Reads through every file in directory and determines correct action for each file based off the file extension
      * Files will either be moved to the correct directory or extracted and processed.
-     * @param uncompressedFolder
+     * @param uncompressedFolder Path of directory to process
      */
     private void processFilesInDirectory(Path uncompressedFolder){
-        ArrayList<String> fileNames = NwnFileHandler.getFilesNamesInDirectory(uncompressedFolder);
+        ArrayList<String> fileNames = NwnFileHandler.getFileNamesInDirectory(uncompressedFolder);
         for(String fileName:fileNames){
             Path srcFile = Paths.get(uncompressedFolder.toString() + File.separator + fileName);
             if(srcFile.toFile().isDirectory()){
@@ -208,9 +224,10 @@ public class NwnUpdater implements Runnable{
     }
 
     /**
-     * 
-     * @param fileName
-     * @param parentFolder
+     * Extract contents of archive to current directory
+	 * Supports zip and rar
+     * @param fileName archive file name
+     * @param parentFolder folder containing archive file 
      */
     private void uncompressFile(String fileName, String parentFolder){
 		currentGui.appendOutputText("\nExtracting "+fileName+"...");
@@ -234,8 +251,9 @@ public class NwnUpdater implements Runnable{
     }
 
     /**
-     *
-     * @param filesToDownload
+     * Download files from given list
+	 * If they are archives, extract them
+     * @param filesToDownload List of ServerFile objects to download
      */
     private void downloadFilesFromList(ArrayList<ServerFile> filesToDownload){
 		//todo: don't hardcode progress numbers
@@ -262,7 +280,8 @@ public class NwnUpdater implements Runnable{
     }
 
     /**
-     *
+     * Scan local folders which should contain the files needed for the selected server
+	 * If any files are missing, add them to the list of files to download
      * @return
      */
     private ArrayList<ServerFile> determineFilesToDownload(){
@@ -278,7 +297,7 @@ public class NwnUpdater implements Runnable{
         ArrayList<ServerFile> filesToDownload = new ArrayList<ServerFile>();
         for(String folder:affectedFolders){
             Path folderPath = Paths.get(nwnRootPath.toString() + File.separator + folder);
-            ArrayList<String> localFiles = NwnFileHandler.getFilesNamesInDirectory(folderPath);
+            ArrayList<String> localFiles = NwnFileHandler.getFileNamesInDirectory(folderPath);
             for(ServerFile serverFile:serverFileList){
 				currentGui.appendOutputText(".");
                 if(serverFile.getFileList() == null && serverFile.getFolder().equals(folder) && !localFiles.contains(serverFile.getName())){
@@ -300,7 +319,8 @@ public class NwnUpdater implements Runnable{
     }
 
     /**
-     *
+     * Parse json file containing files required for server
+	 * Convert those files into ServerFile objects and store them 
      */
     private boolean parseServerFileJson(){
 		String compressedFileName;
@@ -309,7 +329,7 @@ public class NwnUpdater implements Runnable{
 		int statusIncrement;
 		currentGui.appendOutputText("\n\nReading file list");
         try{
-			Thread.sleep(1000);
+			Thread.sleep(500);
             FileReader  reader     = new FileReader(serverFileJson.toString());
             JSONParser  jsonParser = new JSONParser();
             JSONObject  jsonObject = (JSONObject) jsonParser.parse(reader);
@@ -367,22 +387,38 @@ public class NwnUpdater implements Runnable{
 		return true;
     }
 
+	/**
+	 * @return ArrayList of files required by the selected server 
+	 */
     public ArrayList<ServerFile> getServerFileList(){
         return serverFileList;
     }
 
+	/**
+	 * @return User specified root path of nwn
+	 */
     public Path getNwnRootPath(){
         return nwnRootPath;
     }
 
+	/**
+	 * @return path to json file containing files required by selected server 
+	 */
     public Path getServerFileJson(){
         return serverFileJson;
     }
 
+	/**
+	 * Set path of directory containing nwmain.exe
+	 * @param newNwnRootPath root path for nwn
+	 */
     public void setNwnRootPath(Path newNwnRootPath){
         nwnRootPath = newNwnRootPath;
     }
 
+	/**
+	 * @param newServerFileJson path to json file containing required server files
+	 */
     public void setServerFileJson(Path newServerFileJson){
         serverFileJson = newServerFileJson;
     }
