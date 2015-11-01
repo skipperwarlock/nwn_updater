@@ -46,7 +46,7 @@ public class NwnUpdater implements Runnable{
         if(!tmpFolder.exists()){
             tmpFolder.mkdir();
         }else{
-		    deleteDirWithMessage(tmpFolder, "Removing old files...");
+		    deleteDirWithMessage(tmpFolder, "\nRemoving old files...");
 		    tmpFolder.mkdir();
 		}
     }
@@ -374,14 +374,14 @@ public class NwnUpdater implements Runnable{
 		    reader.close();
         }catch (IOException ex){
 //            ex.printStackTrace();
-		    currentGui.appendOutputText("...Failed\nERROR: Cannot read server file list.");
+		    currentGui.appendOutputText("...failed\nERROR: Cannot read server file list.");
 		    return false;
         }catch (ParseException ex){
 //            ex.printStackTrace();
-		    currentGui.appendOutputText("...Failed\nERROR: Cannot parse server file list.");
+		    currentGui.appendOutputText("...failed\nERROR: Cannot parse server file list.");
 		    return false;
         }catch (InterruptedException ex){
-		    currentGui.appendOutputText("Canceled");
+		    currentGui.appendOutputText("...canceled");
 			return false;
 		}
 		return true;

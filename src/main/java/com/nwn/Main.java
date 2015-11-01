@@ -43,17 +43,21 @@ public class Main {
 		});
 	}
    
-//	private static void regexTesting(){
-//		String testString = "[ServerName:coolserver.net,FileUrl:rawr.com],[ServerName:rawr2,FileUrl:ftp://www.dropbox.com/rawr/rawrFile-052.txt]";
+	private static void regexTesting(){
+		String testString = "[ServerName:coolserver.net,FileUrl:rawr.com],[ServerName:rawr2,FileUrl:ftp://www.dropbox.com/rawr/rawrFile-052.txt]";
 //		String pattern = "(ServerName\\:?[a-zA-Z0-9_\\./\\-\\:]+)(\\,)(FileUrl\\:?[a-zA-Z0-9\\-_\\./\\:]+)";
-//		Pattern testPattern = Pattern.compile(pattern);
-//		Matcher m = testPattern.matcher(testString);
-//		while(m.find()){
-//			System.out.println(m.group(0));	
-//		}
-//	}
+		String pattern = "(?<=\\[)(ServerName\\:?.*?)\\,(FileUrl\\:?.*?)(?=\\])";
+		Pattern testPattern = Pattern.compile(pattern);
+		Matcher m = testPattern.matcher(testString);
+		while(m.find()){
+			System.out.println(m.group(0));	
+			System.out.println(m.group(1));
+			System.out.println(m.group(2));
+		}
+	}
 
 	public static void main(String[] args) throws Exception{
+//		regexTesting();
 		nwnUpdaterConfig.getInstance().load("NwnUpdater.cfg");
 		launchHomeView();
 	}

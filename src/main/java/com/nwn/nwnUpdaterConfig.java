@@ -199,13 +199,13 @@ public class nwnUpdaterConfig {
 		String serverName;
 		String txtServerUrl;
 		URL serverUrl;
-		String pattern = "(ServerName\\:?[a-zA-Z0-9_\\./\\-\\:]+)(\\,)(FileUrl\\:?[a-zA-Z0-9\\-_\\./\\:]+)";
+		String pattern = "(?<=\\[)(ServerName\\:?.*?)\\,(FileUrl\\:?.*?)(?=\\])";
 		Pattern testPattern = Pattern.compile(pattern);
 		Matcher m = testPattern.matcher(serverListProperty);
 		while(m.find()){
 			serverName   = m.group(1);
 			serverName   = serverName.substring(serverName.indexOf(':')+1);
-			txtServerUrl = m.group(3);
+			txtServerUrl = m.group(2);
 			txtServerUrl = txtServerUrl.substring(txtServerUrl.indexOf(':')+1);
 //			System.out.println("server name:" + serverName + " server url:" + txtServerUrl);
 			try{

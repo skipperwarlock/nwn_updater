@@ -254,10 +254,6 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 			UrlValidator urlValidator       = new UrlValidator(schemes);
 			String nameMessage              = "Server Name:\n";
 			String urlMessage               = "Server File URL:\n";
-			String serverNamePatternString  = "([a-zA-Z0-9_\\./\\-\\:]+)";
-			String serverUrlPatternString   = "([a-zA-Z0-9\\-_\\./\\:]+)"; 
-			Pattern serverNamePattern       = Pattern.compile(serverNamePatternString);
-			Pattern serverUrlPattern        = Pattern.compile(serverUrlPatternString);
 			do{
 				newServerName = (String)JOptionPane.showInputDialog(
 									null,
@@ -267,14 +263,8 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 				if(newServerName == null){
 					break;
 				}
-				Matcher m = serverNamePattern.matcher(newServerName);
-				if(m.find()){
-					if(!m.group(0).equals(newServerName)){
-						nameMessage   = "Please Enter a Valid Name:\n";
-						newServerName = "";
-					}
-				}else{
-					nameMessage   = "Please Enter a Valid Name:\n";
+				if(newServerName.contains(",")){
+					nameMessage   = "Name cannot have commas:\n";
 					newServerName = "";
 				}
 			}while((newServerName.length() == 0)); 
@@ -290,13 +280,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 				if(newServerFileUrl == null){
 					break;
 				}
-				Matcher m = serverUrlPattern.matcher(newServerFileUrl);
-				if(m.find()){
-					if(!urlValidator.isValid(newServerFileUrl) || !m.group(0).equals(newServerFileUrl)){
-						urlMessage       = "Please Enter Valid Url:\n";
-						newServerFileUrl = "";
-					}
-				}else{
+				if(!urlValidator.isValid(newServerFileUrl)){
 					urlMessage       = "Please Enter Valid Url:\n";
 					newServerFileUrl = "";
 				}
