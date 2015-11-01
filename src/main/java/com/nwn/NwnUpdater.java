@@ -374,11 +374,11 @@ public class NwnUpdater implements Runnable{
 		    reader.close();
         }catch (IOException ex){
 //            ex.printStackTrace();
-		    currentGui.appendOutputText("Failed\nERROR: Cannot read server file list.");
+		    currentGui.appendOutputText("...Failed\nERROR: Cannot read server file list.");
 		    return false;
         }catch (ParseException ex){
 //            ex.printStackTrace();
-		    currentGui.appendOutputText("Failed\nERROR: Cannot parse server file list.");
+		    currentGui.appendOutputText("...Failed\nERROR: Cannot parse server file list.");
 		    return false;
         }catch (InterruptedException ex){
 		    currentGui.appendOutputText("Canceled");
