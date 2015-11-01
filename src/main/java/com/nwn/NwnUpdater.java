@@ -331,7 +331,7 @@ public class NwnUpdater implements Runnable{
 		int statusIncrement;
 		currentGui.appendOutputText("\n\nReading file list");
         try{
-			Thread.sleep(200);
+			Thread.sleep(500);
             FileReader  reader     = new FileReader(serverFileJson.toString());
             JSONParser  jsonParser = new JSONParser();
             JSONObject  jsonObject = (JSONObject) jsonParser.parse(reader);
