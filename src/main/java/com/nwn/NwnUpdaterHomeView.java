@@ -70,6 +70,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
         progressBarTask = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("NWN Server Updater");
 
         btnStartUpdate.setText("Update");
         btnStartUpdate.addActionListener(new java.awt.event.ActionListener() {

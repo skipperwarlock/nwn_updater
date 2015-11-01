@@ -304,7 +304,9 @@ public class NwnUpdater implements Runnable{
                     filesToDownload.add(serverFile);
                 }else if(serverFile.getFileList() != null){
 					for(String file:serverFile.getFileList()){
-						if(!localFiles.contains(file) && NwnFileHandler.getFileExtension(file).equalsIgnoreCase(folder)){
+						if(!localFiles.contains(file) && NwnFileHandler.getFileExtension(file).equalsIgnoreCase(folder) 
+							&& !filesToDownload.contains(serverFile)){
+							
 							filesToDownload.add(serverFile);
 							break;
 						}
@@ -329,7 +331,7 @@ public class NwnUpdater implements Runnable{
 		int statusIncrement;
 		currentGui.appendOutputText("\n\nReading file list");
         try{
-			Thread.sleep(500);
+			Thread.sleep(200);
             FileReader  reader     = new FileReader(serverFileJson.toString());
             JSONParser  jsonParser = new JSONParser();
             JSONObject  jsonObject = (JSONObject) jsonParser.parse(reader);
