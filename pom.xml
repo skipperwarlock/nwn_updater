@@ -6,7 +6,7 @@
 
     <groupId>groupId</groupId>
     <artifactId>nwn_updater</artifactId>
-    <version>4.00-SNAPSHOT</version>
+    <version>4.00</version>
 
     <dependencies>
         <dependency>
@@ -28,6 +28,11 @@
 	    <groupId>commons-validator</groupId>
 	    <artifactId>commons-validator</artifactId>
 	    <version>1.4.1</version>
+	</dependency>
+	<dependency>
+		<groupId>com.github.junrar</groupId>
+		<artifactId>junrar</artifactId>
+		<version>0.7</version>
 	</dependency>
     </dependencies>
 <build>
@@ -51,6 +56,31 @@
             <configuration>
                 <source>1.7</source>
                 <target>1.7</target>
+            </configuration>
+        </plugin>
+        <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+
+                <archive>
+                    <manifest>
+                        <addClasspath>true</addClasspath>
+                        <mainClass>com.nwn.Main</mainClass>
+                    </manifest>
+                </archive>
+
+                <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                </descriptorRefs>
+
             </configuration>
         </plugin>
     </plugins>

@@ -384,7 +384,11 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 	 * Perform actions necessary to start the update process
 	 */	
 	private void startUpdateThread(){
-		if(NwnFileHandler.isValidNwnDirectory(txtNwnDir.getText(), "nwmain.exe")){
+		if(!NwnFileHandler.isValidNwnDirectory(txtNwnDir.getText(), "nwmain.exe")){
+			appendOutputText("\nPlease provide a valid NWN Directory");
+		}else if(cmbServerList.getItemCount() <= 0){
+			appendOutputText("\nNo Server Specified");
+		}else{
 			progressBarTask.setValue(0);
 			progressBarOverall.setValue(0);
 			btnStartUpdate.setEnabled(false);
@@ -401,14 +405,12 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 			updaterThread = new Thread(nwnUpdater, "Update Thread");
 			updaterThread.start();
 			btnStartUpdate.setEnabled(true);
-		}else{
-			appendOutputText("\nPlease provide a valid NWN Directory");
 		}
 	}
 	
-	/**
-	 * @param args the command line arguments
-	 */
+//	/**
+//	 * @param args the command line arguments
+//	 */
 //	public static void main(String args[]) {
 //		/* Set the Nimbus look and feel */
 //        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -436,6 +438,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 //		/* Create and display the form */
 //		java.awt.EventQueue.invokeLater(new Runnable() {
 //			public void run() {
+//				nwnUpdaterConfig.getInstance().load("NwnUpdater.cfg");
 //				new NwnUpdaterHomeView().setVisible(true);
 //			}
 //		});

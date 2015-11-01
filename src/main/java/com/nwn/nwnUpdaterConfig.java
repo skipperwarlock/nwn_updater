@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 public class nwnUpdaterConfig {
 	private Path	              nwnDir;
 	private ArrayList<ServerInfo> serverList;
-	private String		      fileName;
+	private String		          fileName;
 
 	private static nwnUpdaterConfig instance = null;
 	
@@ -83,7 +83,7 @@ public class nwnUpdaterConfig {
 		try{
 			output = new FileOutputStream(cfg);
 			Properties prop = new Properties();
-			prop.setProperty("nwnDir", nwnDir.toString());
+			prop.setProperty("nwnDir", "C:\\NWN");
 			prop.setProperty("serverList","");
 			prop.store(output,null);
 		}catch(IOException ex){
