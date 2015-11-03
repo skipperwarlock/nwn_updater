@@ -317,9 +317,14 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
 		 * @param evt 
 		 */
         private void btnRemoveServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveServerActionPerformed
-			config.getServerList().remove(cmbServerList.getSelectedItem());
-			cmbServerList.removeItemAt(cmbServerList.getSelectedIndex());
-			config.save();
+			ServerInfo selectedServer = (ServerInfo) cmbServerList.getSelectedItem();
+			int confirm = JOptionPane.showConfirmDialog (null, "Are you sure you want to delete "
+				+selectedServer.getServerName()+"?","Warning",JOptionPane.YES_NO_OPTION);
+			if(confirm == JOptionPane.YES_OPTION){
+				config.getServerList().remove(cmbServerList.getSelectedItem());
+				cmbServerList.removeItemAt(cmbServerList.getSelectedIndex());
+				config.save();
+			}
         }//GEN-LAST:event_btnRemoveServerActionPerformed
 
 		/**
