@@ -29,6 +29,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ public class NwnUpdater implements Runnable{
     private ArrayList<ServerFile> serverFileList;
     private ArrayList<String>     affectedFolders;
     private NwnUpdaterHomeView    currentGui;
+	private boolean[]			  error;
 
     /**
      * Create NwnUpdater object
@@ -57,6 +59,7 @@ public class NwnUpdater implements Runnable{
         nwnRootPath     = newNwnRootPath;
         serverFileJson  = newServerFileJson;
 		currentGui      = gui;
+		error			= new boolean[]{false};
 
         File tmpFolder = new File(nwnRootPath.toString() + File.separator + FolderByExt.COMPRESSED.toString());
         if(!tmpFolder.exists()){
@@ -72,6 +75,7 @@ public class NwnUpdater implements Runnable{
      */
     @Override
     public void run() {
+		error[0] = false;
 		currentGui.setUpdateBtnText("Stop");    
 	    
 		if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
@@ -90,7 +94,6 @@ public class NwnUpdater implements Runnable{
 	
 		if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
 		cleanup();
-		printExitStatus(0);
     }
 	/**
 	 * Output why the update process ended
@@ -105,11 +108,15 @@ public class NwnUpdater implements Runnable{
 	 */
     private void printExitStatus(int status){
 	    String exitStatus;
+		if(error[0]){
+			status = 4;
+		}
 	    switch(status){
 		    case 0: exitStatus  = "Update Process Complete"; break;
 		    case 1: exitStatus  = "Update canceled by user"; break;
 		    case 2: exitStatus  = "Update failed"; break;
 		    case 3: exitStatus  = "All Files up to date"; break;
+			case 4: exitStatus  = "Update completed with errors"; break;
 		    default: exitStatus = "Update failed for unknonw reason"; break;
 	    }
 	    currentGui.appendOutputText("\n"+exitStatus);
@@ -193,14 +200,17 @@ public class NwnUpdater implements Runnable{
 			}
         }catch (MalformedURLException ex){
 		    currentGui.appendOutputText("\nERROR: URL Invalid");
+			error[0] = true;
 //            ex.printStackTrace();
             return false;
         }catch (FileNotFoundException ex){
 		    currentGui.appendOutputText("\nERROR: File not found");
+			error[0] = true;
 //            ex.printStackTrace();
             return false;
         }catch (IOException ex){
-	    currentGui.appendOutputText("\nERROR: Cannot save file");
+			currentGui.appendOutputText("\nERROR: Cannot save file");
+			error[0] = true;
 //            ex.printStackTrace();
             return false;
         }
@@ -217,8 +227,19 @@ public class NwnUpdater implements Runnable{
      * @param uncompressedFolder Path of directory to process
      */
     private void processFilesInDirectory(Path uncompressedFolder){
-        ArrayList<String> fileNames = NwnFileHandler.getFileNamesInDirectory(uncompressedFolder);
-        for(String fileName:fileNames){
+		ArrayList<String> fileNames;
+		try{
+			fileNames = NwnFileHandler.getFileNamesInDirectory(uncompressedFolder);
+		}catch(NoSuchFileException nsfe){
+			currentGui.appendOutputText("\nERROR: Folder "+uncompressedFolder.getFileName().toString()+" does not exist!");
+			error[0] = true;
+			return;
+		}catch(IOException ex){
+			currentGui.appendOutputText("\nERROR: Cannot parse local directory!");
+			error[0] = true;
+			return;
+		}
+		for(String fileName:fileNames){
             Path srcFile = Paths.get(uncompressedFolder.toString() + File.separator + fileName);
             if(srcFile.toFile().isDirectory()){
                 processFilesInDirectory(srcFile);
@@ -228,12 +249,13 @@ public class NwnUpdater implements Runnable{
                 Path desiredPath = Paths.get(nwnRootPath.toString() + File.separator + folderName + File.separator + fileName);
                 if (!desiredPath.toFile().exists() && desiredFolder.toFile().exists()) {
                     NwnFileHandler.moveFile(srcFile, desiredPath);
-		    currentGui.appendOutputText("\nMoving " + srcFile.getFileName().toString() + " to " + desiredFolder.toString());
+					currentGui.appendOutputText("\nMoving " + srcFile.getFileName().toString() + " to " + desiredFolder.toString());
                     if (folderName.equals(FolderByExt.COMPRESSED.toString())) {
                         uncompressFile(fileName, folderName);
                     }
                 }else if(!desiredFolder.toFile().exists()){
-		    currentGui.appendOutputText("\nERROR: Folder "+folderName+" does not exist!");
+					currentGui.appendOutputText("\nERROR: Folder "+folderName+" does not exist!");
+					error[0] = true;
                 }
             }
         }
@@ -263,6 +285,7 @@ public class NwnUpdater implements Runnable{
             processFilesInDirectory(Paths.get(baseName));
         }else{
 		    currentGui.appendOutputText("\nERROR: compression not supported");
+			error[0] = true;
         }
     }
 
@@ -313,7 +336,18 @@ public class NwnUpdater implements Runnable{
         ArrayList<ServerFile> filesToDownload = new ArrayList<ServerFile>();
         for(String folder:affectedFolders){
             Path folderPath = Paths.get(nwnRootPath.toString() + File.separator + folder);
-            ArrayList<String> localFiles = NwnFileHandler.getFileNamesInDirectory(folderPath);
+            ArrayList<String> localFiles;
+			try{
+				localFiles = NwnFileHandler.getFileNamesInDirectory(folderPath);
+			}catch(NoSuchFileException nsfe){
+				currentGui.appendOutputText("\nERROR: Folder "+folderPath.getFileName().toString()+" does not exist!");
+				error[0] = true;
+				return new ArrayList<ServerFile>();
+			}catch(IOException ex){
+				currentGui.appendOutputText("\nERROR: Cannot parse local directory!");
+				error[0] = true;
+				return new ArrayList<ServerFile>();
+			}
             for(ServerFile serverFile:serverFileList){
 				currentGui.appendOutputText(".");
                 if(serverFile.getFileList() == null && serverFile.getFolder().equals(folder) && !localFiles.contains(serverFile.getName())){
@@ -393,10 +427,12 @@ public class NwnUpdater implements Runnable{
         }catch (IOException ex){
 //            ex.printStackTrace();
 		    currentGui.appendOutputText("...failed\nERROR: Cannot read server file list.");
+			error[0] = true;
 		    return false;
         }catch (ParseException ex){
 //            ex.printStackTrace();
 		    currentGui.appendOutputText("...failed\nERROR: Cannot parse server file list.");
+			error[0] = true;
 		    return false;
         }catch (InterruptedException ex){
 		    currentGui.appendOutputText("...canceled");

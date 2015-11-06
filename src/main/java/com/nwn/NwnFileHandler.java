@@ -58,17 +58,13 @@ public class NwnFileHandler {
      * @param dir Path to directory for parsing
      * @return String of file names in directory
      */
-    public static ArrayList<String> getFileNamesInDirectory(Path dir){
+    public static ArrayList<String> getFileNamesInDirectory(Path dir)throws NoSuchFileException, IOException{
         ArrayList<String> fileNamesInDir = new ArrayList<String>();
-        try {
-            DirectoryStream<Path> dirStream = Files.newDirectoryStream(dir);
-            for (Path file : dirStream) {
-                fileNamesInDir.add(file.getFileName().toString());
-            }
-            dirStream.close();
-        }catch (IOException ex){
-            ex.printStackTrace();
-        }
+		DirectoryStream<Path> dirStream = Files.newDirectoryStream(dir);
+		for (Path file : dirStream) {
+			fileNamesInDir.add(file.getFileName().toString());
+		}
+		dirStream.close();
         return fileNamesInDir;
     }
 
@@ -243,7 +239,12 @@ public class NwnFileHandler {
 	public static boolean isValidNwnDirectory(String nwnDir, String checkfileName){
 		Path nwnPath = Paths.get(nwnDir);
 		if(nwnPath.toFile().isDirectory()){
-			ArrayList<String> nwnPathFiles = getFileNamesInDirectory(nwnPath);
+			ArrayList<String> nwnPathFiles;
+			try{
+				nwnPathFiles = NwnFileHandler.getFileNamesInDirectory(nwnPath);
+			}catch(IOException ex){
+				return false;
+			}
 			for(String fileName:nwnPathFiles){
 				if(fileName.equalsIgnoreCase(checkfileName)){
 					return true;
