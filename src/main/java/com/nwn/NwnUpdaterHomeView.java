@@ -104,7 +104,7 @@ public class NwnUpdaterHomeView extends javax.swing.JFrame{
         txtOutput.setForeground(new java.awt.Color(0, 255, 0));
         txtOutput.setLineWrap(true);
         txtOutput.setRows(5);
-        txtOutput.setText("NWN Server Updater \nversion: 4.00\nBy: Skipper Warlock");
+        txtOutput.setText("NWN Server Updater \nversion: 4.00\nBy: Skipper Warlock\nMay the work of DM Ronin stay undead forever.");
         txtOutput.setWrapStyleWord(true);
         txtOutput.setCaretColor(new java.awt.Color(0, 255, 0));
         txtOutput.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));

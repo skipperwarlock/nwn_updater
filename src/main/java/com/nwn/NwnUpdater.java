@@ -38,6 +38,7 @@ import java.util.Set;
 
 /**
  * Created by Sam on 10/10/2015.
+ * TODO://add version check in json
  */
 public class NwnUpdater implements Runnable{
     private Path                  nwnRootPath;
@@ -94,6 +95,8 @@ public class NwnUpdater implements Runnable{
 	
 		if(Thread.currentThread().isInterrupted()){cleanup();printExitStatus(1);return;}
 		cleanup();
+
+		printExitStatus(0);
     }
 	/**
 	 * Output why the update process ended
@@ -117,7 +120,7 @@ public class NwnUpdater implements Runnable{
 		    case 2: exitStatus  = "Update failed"; break;
 		    case 3: exitStatus  = "All Files up to date"; break;
 			case 4: exitStatus  = "Update completed with errors"; break;
-		    default: exitStatus = "Update failed for unknonw reason"; break;
+		    default: exitStatus = "Update failed for unknown reason"; break;
 	    }
 	    currentGui.appendOutputText("\n"+exitStatus);
     }
