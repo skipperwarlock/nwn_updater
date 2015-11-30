@@ -35,6 +35,11 @@ import net.lingala.zip4j.core.ZipFile;
  */
 public class NwnFileHandler {
 
+    //prevent instantiation
+    private NwnFileHandler(){
+        throw new AssertionError();
+    }
+
     /**
      * Get files in given directory
      * @param dir Path to directory for parsing
