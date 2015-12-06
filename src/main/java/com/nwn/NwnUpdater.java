@@ -174,6 +174,7 @@ public class NwnUpdater implements Runnable{
      * @return True if download success, False if download failed
      */
     public boolean interruptableDownloadFile(String fileUrl, String dest){
+		boolean success = true;
 		currentGui.appendOutputText("\nDownloading "+fileUrl+" to "+dest+"...");
         try{
             URL url = new URL(fileUrl);
@@ -200,28 +201,28 @@ public class NwnUpdater implements Runnable{
 			if(Thread.currentThread().isInterrupted()){//cleanup from interrupt
 				File thisFile = new File(dest);
 				thisFile.delete();
+				success = false;
 			}
         }catch (MalformedURLException ex){
 		    currentGui.appendOutputText("\nERROR: URL Invalid");
 			error[0] = true;
 //            ex.printStackTrace();
-            return false;
+            success = false;
         }catch (FileNotFoundException ex){
 		    currentGui.appendOutputText("\nERROR: File not found");
 			error[0] = true;
 //            ex.printStackTrace();
-            return false;
+            success = false;
         }catch (IOException ex){
 			currentGui.appendOutputText("\nERROR: Cannot save file");
 			error[0] = true;
 //            ex.printStackTrace();
-            return false;
+            success = false;
         }
-		if(Thread.currentThread().isInterrupted()){
-			return false;
+		if(success) {
+			currentGui.appendOutputText("done");
 		}
-		currentGui.appendOutputText("done");
-        return true;
+		return success;
     }
 
     /**
@@ -250,12 +251,16 @@ public class NwnUpdater implements Runnable{
                 String folderName = ServerFile.getFolderByExtension(fileName);
                 Path desiredFolder = Paths.get(nwnRootPath.toString() + File.separator + folderName);
                 Path desiredPath = Paths.get(nwnRootPath.toString() + File.separator + folderName + File.separator + fileName);
-                if (!desiredPath.toFile().exists() && desiredFolder.toFile().exists()) {
+
+                //make sure no file with the same name exists before we move it there
+				if (!desiredPath.toFile().exists() && desiredFolder.toFile().exists()) {
                     NwnFileHandler.moveFile(srcFile, desiredPath);
 					currentGui.appendOutputText("\nMoving " + srcFile.getFileName().toString() + " to " + desiredFolder.toString());
                     if (folderName.equals(FolderByExt.COMPRESSED.toString())) {
                         uncompressFile(fileName, folderName);
                     }
+
+				//we don't want to create folders for the user, so just alert them and move on
                 }else if(!desiredFolder.toFile().exists()){
 					currentGui.appendOutputText("\nERROR: Folder "+folderName+" does not exist!");
 					error[0] = true;
@@ -378,6 +383,7 @@ public class NwnUpdater implements Runnable{
 	 * Convert those files into ServerFile objects and store them 
      */
     private boolean parseServerFileJson(){
+		boolean success = true;
 		String compressedFileName;
 		currentGui.setTaskProgressBarValue(0);
 		int currentProgress = 0;
@@ -431,17 +437,17 @@ public class NwnUpdater implements Runnable{
 //            ex.printStackTrace();
 		    currentGui.appendOutputText("...failed\nERROR: Cannot read server file list.");
 			error[0] = true;
-		    return false;
+		    success = false;
         }catch (ParseException ex){
 //            ex.printStackTrace();
 		    currentGui.appendOutputText("...failed\nERROR: Cannot parse server file list.");
 			error[0] = true;
-		    return false;
+		    success = false;
         }catch (InterruptedException ex){
 		    currentGui.appendOutputText("...canceled");
-			return false;
+			success = false;
 		}
-		return true;
+		return success;
     }
 
 	/**
